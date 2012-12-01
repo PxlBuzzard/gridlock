@@ -3,15 +3,15 @@ using System.Collections;
 
 public class playerUpdate : MonoBehaviour {
 	
-	
+	//public const int NUM_BULLETS = 20;
 	public const int MOVE_SPEED = 5;
 	public string lastDirection;
 	public OTAnimatingSprite player;
+	public bulletManager theBulletManager;
 	
 	// Use this for initialization
 	void Start () 
 	{	
-    	player = OT.ObjectByName("player") as OTAnimatingSprite;
 		lastDirection = "Down";
 	}
 	
@@ -51,8 +51,11 @@ public class playerUpdate : MonoBehaviour {
 			player.PlayLoop(currentDirection);
 			lastDirection = currentDirection;
 		}
-			
 		
-		print ("Direction: " + lastDirection);
+		
+		if(Input.GetKey ("space"))
+		{
+			theBulletManager.Fire(player);
+		}		
 	}
 }

@@ -6,7 +6,7 @@ public class bulletManager : MonoBehaviour
 {
 	private const int NUM_BULLETS = 100;
 	private Queue<OTSprite> inactiveBullets;
-	public OTSprite bulletPrefab;
+	public OTSprite BulletPrefab;
 	public int test;
 	
 	// Use this for initialization
@@ -16,7 +16,7 @@ public class bulletManager : MonoBehaviour
 		
 		for (int i = 0; i < NUM_BULLETS; i++) 
 		{
-			OTSprite aBullet = (OTSprite)Instantiate(bulletPrefab);
+			OTSprite aBullet = (OTSprite)Instantiate(BulletPrefab);
 			(aBullet as OTSprite).position = new Vector3(i - 10, i - 10, 0);
 			inactiveBullets.Enqueue(aBullet);
 		}

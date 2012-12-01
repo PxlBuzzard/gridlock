@@ -17,7 +17,7 @@ public class bulletManager : MonoBehaviour
 		for (int i = 0; i < NUM_BULLETS; i++) 
 		{
 			OTSprite aBullet = (OTSprite)Instantiate(BulletPrefab);
-			(aBullet as OTSprite).position = new Vector3(i - 10, i - 10, 0);
+			(aBullet as OTSprite).position = new Vector3(-25, -25, 0);
 			inactiveBullets.Enqueue(aBullet);
 		}
 	}

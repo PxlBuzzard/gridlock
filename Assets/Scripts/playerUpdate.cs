@@ -17,9 +17,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 	void Start () 
 	{	
 		lastDirection = "Down";
-		player.animation = (OTAnimation)Instantiate(PlayerAnimPrefab);
 		player.spriteContainer = (OTSpriteSheet)Instantiate(PlayerSheetPrefab);
 		
+		player.animation = (OTAnimation)Instantiate(PlayerAnimPrefab);
+		
+		for (int i = 0; i < player.animation.framesets.Length; i++)
+			player.animation.framesets[i].container = player.spriteContainer;
+		
+		print("made character");
 	}
 	
 	// Update is called once per frame
@@ -61,15 +66,17 @@ public class playerUpdate : Photon.MonoBehaviour {
 				lastDirection = currentDirection;
 			}
 			
+
 			
 			if(Input.GetKey ("space"))
 			{
-				//theBulletManager.Fire(player);
+				theBulletManager.Fire(player);
 			}
 		}
 		else
 		{
 			transform.position = Vector3.Lerp(transform.position, correctPos, Time.deltaTime * 5);
+			player.PlayLoop(lastDirection);
 		}
 	}
 	
@@ -80,19 +87,16 @@ public class playerUpdate : Photon.MonoBehaviour {
 			if (photonView.isMine)
 			{
 				stream.SendNext(transform.position);
-				//stream.SendNext(lastDirection);
+				stream.SendNext(lastDirection);
 			}
 		}
 		else
 		{
 			if (!photonView.isMine)
-				correctPos = (Vector3)stream.ReceiveNext();
-			/*if (!photonView.isMine)
 			{
-				transform.position = (Vector3)stream.ReceiveNext();
-				//transform.position = Vector3.Lerp(transform.position, (Vector3)stream.ReceiveNext(), Time.deltaTime * 5);
-				//lastDirection = (string)stream.ReceiveNext();
-			}*/
+				correctPos = (Vector3)stream.ReceiveNext();
+				lastDirection = (string)stream.ReceiveNext();
+			}
 		}
 	}
 }

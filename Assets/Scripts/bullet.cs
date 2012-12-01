@@ -7,6 +7,7 @@ public class bullet : MonoBehaviour
 	private Vector2 speed;
 	private float speedMod = 0.3f;
 	public OTSprite thisBullet;
+	public OTView worldBounds;
 	
 	// Use this for initialization
 	void Start () 

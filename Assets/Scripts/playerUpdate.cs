@@ -11,6 +11,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public OTAnimation PlayerAnimPrefab;
 	public OTSpriteSheet PlayerSheetPrefab;
 	
+	Vector3 correctPos = Vector3.zero;
+	
 	// Use this for initialization
 	void Start () 
 	{	
@@ -62,8 +64,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 			
 			if(Input.GetKey ("space"))
 			{
-				theBulletManager.Fire(player);
+				//theBulletManager.Fire(player);
 			}
+		}
+		else
+		{
+			transform.position = Vector3.Lerp(transform.position, correctPos, Time.deltaTime * 5);
 		}
 	}
 	
@@ -74,17 +80,19 @@ public class playerUpdate : Photon.MonoBehaviour {
 			if (photonView.isMine)
 			{
 				stream.SendNext(transform.position);
-				stream.SendNext(lastDirection);
+				//stream.SendNext(lastDirection);
 			}
 		}
 		else
 		{
-			//correctPos = (Vector3)stream.ReceiveNext();
 			if (!photonView.isMine)
+				correctPos = (Vector3)stream.ReceiveNext();
+			/*if (!photonView.isMine)
 			{
-				transform.position = Vector3.Lerp(transform.position, (Vector3)stream.ReceiveNext(), Time.deltaTime * 5);
-				lastDirection = (string)stream.ReceiveNext();
-			}
+				transform.position = (Vector3)stream.ReceiveNext();
+				//transform.position = Vector3.Lerp(transform.position, (Vector3)stream.ReceiveNext(), Time.deltaTime * 5);
+				//lastDirection = (string)stream.ReceiveNext();
+			}*/
 		}
 	}
 }

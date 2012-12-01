@@ -1,12 +1,15 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="\\banner.main.ad.rit.edu\students\sjb6394\IGMProfile\Documents\Documents\Sophomore\Winter\Gridlock Network Prototype\Assets\Scripts\GameManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\playerUpdate.cs">
     <Files>
-      <File FileName="\\banner.main.ad.rit.edu\students\sjb6394\IGMProfile\Documents\Documents\Sophomore\Winter\Gridlock Network Prototype\Assets\Scripts\GameManager.cs" Line="41" Column="17" />
+      <File FileName="\\banner.main.ad.rit.edu\students\sjb6394\IGMProfile\Documents\Documents\Sophomore\Winter\Gridlock Network Prototype\Assets\Scripts\GameManager.cs" Line="1" Column="1" />
       <File FileName="\\banner.main.ad.rit.edu\students\sjb6394\IGMProfile\Documents\Documents\Sophomore\Winter\Gridlock Network Prototype\Assets\Photon Unity Networking\Plugins\PhotonNetwork\Extension\PhotonView.cs" Line="48" Column="37" />
-      <File FileName="\\banner.main.ad.rit.edu\students\sjb6394\IGMProfile\Documents\Documents\Sophomore\Winter\Gridlock Network Prototype\Assets\Scripts\playerMove.cs" Line="28" Column="4" />
+      <File FileName="\\banner.main.ad.rit.edu\students\sjb6394\IGMProfile\Documents\Documents\Sophomore\Winter\Gridlock Network Prototype\Assets\Scripts\playerMove.cs" Line="12" Column="3" />
       <File FileName="\\banner.main.ad.rit.edu\students\sjb6394\IGMProfile\Documents\Documents\Sophomore\Winter\Gridlock Network Prototype\Assets\Scripts\NetworkController.cs" Line="24" Column="3" />
-      <File FileName="Assets\Scripts\playerUpdate.cs" Line="16" Column="3" />
+      <File FileName="Assets\Scripts\playerUpdate.cs" Line="60" Column="32" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="11" Column="50" />
+      <File FileName="Assets\Scripts\bulletManager.cs" Line="31" Column="1" />
+      <File FileName="Assets\Scripts\bullet.cs" Line="27" Column="3" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

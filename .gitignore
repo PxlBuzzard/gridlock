@@ -1,8 +1,9 @@
 # Ignore The following directories / file extensions
-Library
+/Library
 Temp
 
 # Ignore the following file extensions
 *.exe
 *.vcproject
 *.sln
+*.userprefs

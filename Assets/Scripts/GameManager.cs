@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 	
-	private string roomName = "defaultRoom";
+	private string roomName = "Gridlock test";
 	//public LoadBalancingClient GameInstance;
 	private Vector3 spawnPoint = new Vector3(0,0,0);
 	
@@ -21,7 +21,9 @@ public class GameManager : MonoBehaviour {
 		//Setup photon
 		if (!PhotonNetwork.connected)
 		{
-			PhotonNetwork.Connect("129.21.63.130", 5055, "MyCubeGame");
+			//this.ConnectToMaster("d787f7c3-5e04-46f2-96c3-5ced102c4817", "1.0", "thePlayerName");
+			//PhotonNetwork.Connect("app.exitgamescloud.com", 5055, "Gridlock");
+			PhotonNetwork.ConnectUsingSettings("1.0");
 		}
 	}
 	

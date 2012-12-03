@@ -7,3 +7,10 @@ Temp
 *.vcproject
 *.sln
 *.userprefs
+*.vcproject
+*.sln
+*.csproj
+*.unityproj
+*.pidb
+*.so
+*.DS_Store

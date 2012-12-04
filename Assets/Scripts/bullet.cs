@@ -3,27 +3,35 @@ using System.Collections;
 
 public class bullet : MonoBehaviour
 {
-	
+	private const float DELETION_TIME = 5f;
 	private Vector2 speed;
 	private float speedMod = 0.3f;
 	public OTSprite thisBullet;
 	public OTView worldBounds;
+	private Timer timeToDelete;
 	
 	// Use this for initialization
 	void Start () 
 	{
+		timeToDelete = new Timer();
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
 		thisBullet.position += speed;
+		timeToDelete.Update();
+		
+		//kill the bullet if it's been alive long enough
+		//if (timeToDelete.isFinished)
+			
 	}
 	
 	public void Fire (OTAnimatingSprite player)  
 	{
 		speed = Vector2.zero;
 		Vector2 pos = thisBullet.position;
+		timeToDelete.Start(DELETION_TIME);
 
         //Set Position and rotation based on player variables
         switch (player.GetComponent<playerUpdate>().lastDirection)

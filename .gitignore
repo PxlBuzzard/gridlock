@@ -1,6 +1,7 @@
 # Ignore The following directories / file extensions
 /Library
 Temp
+build
 
 # Ignore the following file extensions
 *.exe

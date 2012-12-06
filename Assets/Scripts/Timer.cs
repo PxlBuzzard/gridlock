@@ -7,18 +7,18 @@ public class Timer : MonoBehaviour {
 	public bool isFinished;
 
 	// Use this for initialization
-	void Start () 
+	public void Start () 
 	{
 		isFinished = false;
 	}
 	
-	void Start(float countdownTime)
+	public void Countdown(float countdownTime)
 	{
 		currentTime = countdownTime;	
 	}
 	
 	// Update is called once per frame
-	void Update () 
+	public void Update () 
 	{
 		currentTime -= Time.deltaTime;
 		

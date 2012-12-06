@@ -2,6 +2,8 @@ fileFormatVersion: 2
 guid: 8aca138aa799c5449b0280f65404ed86
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - thisBullet: {fileID: 11400002, guid: 8a0d0ad562a565345afcd74943d39d80, type: 2}
+  - worldBounds: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}

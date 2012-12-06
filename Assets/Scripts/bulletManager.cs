@@ -25,7 +25,7 @@ public class bulletManager : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-
+		
 	}
 	
 	public void Fire (OTAnimatingSprite player)

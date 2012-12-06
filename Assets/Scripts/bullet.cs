@@ -7,13 +7,14 @@ public class bullet : MonoBehaviour
 	private Vector2 speed;
 	private float speedMod = 0.3f;
 	public OTSprite thisBullet;
-	public OTView worldBounds;
 	private Timer timeToDelete;
+	public bool isDead;
 	
 	// Use this for initialization
 	void Start () 
 	{
 		timeToDelete = new Timer();
+		isDead = true;
 	}
 	
 	// Update is called once per frame
@@ -23,15 +24,18 @@ public class bullet : MonoBehaviour
 		timeToDelete.Update();
 		
 		//kill the bullet if it's been alive long enough
-		//if (timeToDelete.isFinished)
-			
+		if (timeToDelete.isFinished)
+		{
+			isDead = true;
+		}
 	}
 	
 	public void Fire (OTAnimatingSprite player)  
 	{
 		speed = Vector2.zero;
 		Vector2 pos = thisBullet.position;
-		timeToDelete.Start(DELETION_TIME);
+		timeToDelete.Countdown(DELETION_TIME);
+		isDead = false;
 
         //Set Position and rotation based on player variables
         switch (player.GetComponent<playerUpdate>().lastDirection)

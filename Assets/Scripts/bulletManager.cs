@@ -5,21 +5,20 @@ using System.Collections.Generic;
 public class bulletManager : MonoBehaviour 
 {
 	private const int NUM_BULLETS = 100;
-	private Queue<bullet> inactiveBullets;
-	private List<bullet> activeBullets;
+	private Queue<OTSprite> inactiveBullets;
+	private List<OTSprite> activeBullets;
 	public OTSprite BulletPrefab;
-	public int test;
 	
 	// Use this for initialization
 	void Start () 
 	{
-		inactiveBullets = new Queue<bullet>();
-		activeBullets = new List<bullet>();
+		inactiveBullets = new Queue<OTSprite>();
+		activeBullets = new List<OTSprite>();
 		
 		for (int i = 0; i < NUM_BULLETS; i++) 
 		{
-			bullet aBullet = (bullet)Instantiate(BulletPrefab);
-			aBullet.thisBullet.position = new Vector3(-25, -25, 0);
+			OTSprite aBullet = (OTSprite)Instantiate(BulletPrefab);
+			(aBullet as OTSprite).position = new Vector3(-25, -25, 0);
 			inactiveBullets.Enqueue(aBullet);
 		}
 	}
@@ -27,13 +26,16 @@ public class bulletManager : MonoBehaviour
 	// Update is called once per frame
 	public void Update () 
 	{
-		foreach (bullet bullet in activeBullets)
+		for (int i = 0; i < activeBullets.Count; i++)
 		{
-			bullet.UpdateBullet();
-			if (bullet.isDead)
+			activeBullets[i].GetComponent<bullet>().Update();
+			
+			if (activeBullets[i].GetComponent<bullet>().isDead)
 			{
-				activeBullets.Remove(bullet);
-				inactiveBullets.Enqueue(bullet);
+				activeBullets[i].position = new Vector3(-25, -25, 0);
+				inactiveBullets.Enqueue(activeBullets[i]);
+				activeBullets.Remove(activeBullets[i]);
+				i--;
 			}
 		}
 	}
@@ -42,12 +44,12 @@ public class bulletManager : MonoBehaviour
 	{
 		if(inactiveBullets.Count > 0)
 		{
-			bullet aBullet = inactiveBullets.Dequeue();
+			OTSprite aBullet = inactiveBullets.Dequeue();
+			activeBullets.Add(aBullet);
 			
 			aBullet.GetComponent<bullet>().Fire(player);
 			
-			test++;
-			print ("Bullet Fired: " + test);
+			print ("Bullet Fired: " + activeBullets.Count);
 		}
 	}
 }

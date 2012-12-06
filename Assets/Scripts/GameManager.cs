@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour {
 			GUILayout.Space(30);
 			GUILayout.Label("Room Listing");
 		
-			foreach (Room room in PhotonNetwork.GetRoomList())
+			foreach (RoomInfo room in PhotonNetwork.GetRoomList())
 			{
 				GUILayout.BeginHorizontal();
 				if (GUILayout.Button(room.name))

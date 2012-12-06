@@ -14,17 +14,19 @@ public class Timer {
 	
 	public void Countdown(float countdownTime)
 	{
-		currentTime = countdownTime;	
+		currentTime = countdownTime;
+		isFinished = false;
 	}
 	
 	// Update is called once per frame
-	public void Update () 
+	public bool Update () 
 	{
 		currentTime -= Time.deltaTime;
 		
 		if (currentTime <= 0)
 		{
-			isFinished = true;
+			return isFinished = true;
 		}
+		return false;
 	}
 }

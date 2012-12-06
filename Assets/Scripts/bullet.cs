@@ -3,9 +3,9 @@ using System.Collections;
 
 public class bullet : MonoBehaviour
 {
-	private const float DELETION_TIME = 5f;
+	private const float DELETION_TIME = .5f;
 	private Vector2 speed;
-	private float speedMod = 0.3f;
+	private float speedMod = 0.5f;
 	public OTSprite thisBullet;
 	private Timer timeToDelete;
 	public bool isDead;
@@ -18,13 +18,12 @@ public class bullet : MonoBehaviour
 	}
 	
 	// Update is called once per frame
-	public void UpdateBullet()
+	public void Update()
 	{
 		thisBullet.position += speed;
-		timeToDelete.Update();
 		
 		//kill the bullet if it's been alive long enough
-		if (timeToDelete.isFinished)
+		if (timeToDelete.Update())
 		{
 			isDead = true;
 		}
@@ -106,8 +105,6 @@ public class bullet : MonoBehaviour
                     break;
                 }
         }
-		
-		print ("Posx: " + pos.x + ", Posy: " + pos.y);
 		
 		thisBullet.position = pos;
 		

@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class Timer : MonoBehaviour {
+public class Timer {
 	
 	private float currentTime;
 	public bool isFinished;

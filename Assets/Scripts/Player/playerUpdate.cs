@@ -32,23 +32,24 @@ public class playerUpdate : Photon.MonoBehaviour {
 		{
 		   	string currentDirection = "";
 			
-			if (Input.GetKey ("left"))
+			//move player
+			if (Input.GetKey ("left") || Input.GetKey ("a"))
 			{
 		        transform.Translate(-MOVE_SPEED * Time.deltaTime,0,0);	
 				currentDirection += "Left";
 			}
-			else if (Input.GetKey ("right"))
+			else if (Input.GetKey ("right") || Input.GetKey ("d"))
 			{
 		        transform.Translate(MOVE_SPEED * Time.deltaTime,0,0);
 				currentDirection += "Right";
 			}
 				
-			if (Input.GetKey ("down"))
+			if (Input.GetKey ("down") || Input.GetKey ("s"))
 			{
 		        transform.Translate(0,-MOVE_SPEED * Time.deltaTime,0);	
 				currentDirection += "Down";
 			}
-			else if (Input.GetKey ("up"))
+			else if (Input.GetKey ("up") || Input.GetKey ("w"))
 			{
 		        transform.Translate(0,MOVE_SPEED * Time.deltaTime,0);
 				currentDirection += "Up";
@@ -65,14 +66,17 @@ public class playerUpdate : Photon.MonoBehaviour {
 				player.PlayLoop(currentDirection);
 				lastDirection = currentDirection;
 			}
-			
 			//player.PlayLoop(currentDirection);
 			//lastDirection = currentDirection;
 			
+			//fire bullets
 			if(Input.GetKey ("space"))
 			{
 				theBulletManager.Fire(player);
 			}
+			
+			//update bullets
+			theBulletManager.Update();
 		}
 		else
 		{

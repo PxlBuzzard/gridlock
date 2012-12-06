@@ -11,14 +11,14 @@ public class bullet : MonoBehaviour
 	public bool isDead;
 	
 	// Use this for initialization
-	void Start () 
+	public void Start () 
 	{
 		timeToDelete = new Timer();
 		isDead = true;
 	}
 	
 	// Update is called once per frame
-	void Update () 
+	public void UpdateBullet()
 	{
 		thisBullet.position += speed;
 		timeToDelete.Update();

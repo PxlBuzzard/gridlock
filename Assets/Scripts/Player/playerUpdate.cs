@@ -8,8 +8,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public string lastDirection;
 	public OTAnimatingSprite player;
 	public bulletManager theBulletManager;
-	public OTAnimation PlayerAnimPrefab;
-	public OTSpriteSheet PlayerSheetPrefab;
 	
 	Vector3 correctPos = Vector3.zero;
 	
@@ -17,9 +15,9 @@ public class playerUpdate : Photon.MonoBehaviour {
 	void Start () 
 	{	
 		lastDirection = "Down";
-		player.spriteContainer = (OTSpriteSheet)Instantiate(PlayerSheetPrefab);
+		player.spriteContainer = OT.ContainerByName("PlayerSheet");
 		
-		player.animation = (OTAnimation)Instantiate(PlayerAnimPrefab);
+		player.animation = OT.AnimationByName("PlayerAnim");
 		
 		for (int i = 0; i < player.animation.framesets.Length; i++)
 			player.animation.framesets[i].container = player.spriteContainer;
@@ -58,7 +56,9 @@ public class playerUpdate : Photon.MonoBehaviour {
 			
 			if(currentDirection == "")
 			{
-				player.PlayLoop(lastDirection + "Static");
+				if (!lastDirection.Contains("Static"))
+					lastDirection += "Static";
+				player.PlayLoop(lastDirection);
 			}
 			else
 			{
@@ -66,7 +66,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 				lastDirection = currentDirection;
 			}
 			
-
+			//player.PlayLoop(currentDirection);
+			//lastDirection = currentDirection;
 			
 			if(Input.GetKey ("space"))
 			{

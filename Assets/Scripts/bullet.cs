@@ -20,12 +20,16 @@ public class bullet : MonoBehaviour
 	// Update is called once per frame
 	public void Update()
 	{
-		thisBullet.position += speed;
-		
-		//kill the bullet if it's been alive long enough
-		if (timeToDelete.Update())
+		if(!isDead)
 		{
-			isDead = true;
+			thisBullet.position += speed;
+			
+			//kill the bullet if it's been alive long enough
+			if (timeToDelete.Update())
+			{
+				isDead = true;
+				thisBullet.visible = false;
+			}
 		}
 	}
 	
@@ -35,11 +39,13 @@ public class bullet : MonoBehaviour
 		Vector2 pos = thisBullet.position;
 		timeToDelete.Countdown(DELETION_TIME);
 		isDead = false;
+		thisBullet.visible = true;
 
         //Set Position and rotation based on player variables
         switch (player.GetComponent<playerUpdate>().lastDirection)
         {
             case "Down":
+			case "DownStatic":
                 {
 				    thisBullet.rotation = Mathf.PI * 3 / 2;
                     speed = new Vector2(0.0f, -1.0f);
@@ -48,6 +54,7 @@ public class bullet : MonoBehaviour
                     break;
                 }
             case "LeftDown":
+			case "LeftDownStatic":
                 {
 			        thisBullet.rotation = Mathf.PI * 5 / 4;
                     speed = new Vector2(-1.0f, -1.0f);
@@ -56,6 +63,7 @@ public class bullet : MonoBehaviour
                     break;
                 }
             case "Left":
+			case "LeftStatic":
                 {
                     thisBullet.rotation = Mathf.PI;
                     speed = new Vector2(-1.0f, 0.0f);
@@ -64,6 +72,7 @@ public class bullet : MonoBehaviour
                     break;
                 }
             case "LeftUp":
+			case "LeftUpStatic":
                 {
 					thisBullet.rotation = Mathf.PI * 3 / 4;
                     speed = new Vector2(-1.0f, 1.0f);
@@ -72,6 +81,7 @@ public class bullet : MonoBehaviour
                     break;
                 }
             case "Up":
+			case "UpStatic":
                 {
 			        thisBullet.rotation = Mathf.PI / 2;
                     speed = new Vector2(0.0f, 1.0f);
@@ -80,6 +90,7 @@ public class bullet : MonoBehaviour
                     break;
                 }
             case "RightUp":
+			case "RightUpStatic":
                 {
 
 			        thisBullet.rotation = Mathf.PI / 4;
@@ -89,6 +100,7 @@ public class bullet : MonoBehaviour
                     break;
                 }
             case "Right":
+			case "RightStatic":
                 {
                     thisBullet.rotation = 0;
                     speed = new Vector2(1.0f, 0.0f);
@@ -97,6 +109,7 @@ public class bullet : MonoBehaviour
                     break;
                 }
             case "RightDown":
+			case "RightDownStatic":
                 {
                     thisBullet.rotation = Mathf.PI * 7 / 4;
                     speed = new Vector2(1.0f, -1.0f);

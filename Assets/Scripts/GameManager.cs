@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 	
+	private const int MAX_PLAYERS_IN_ROOM = 20;
 	private string roomName = "Gridlock test";
 	//public LoadBalancingClient GameInstance;
 	private Vector3 spawnPoint = new Vector3(0,0,0);
@@ -13,16 +14,10 @@ public class GameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start() {
 		Application.runInBackground = true;
-		// CustomTypes.Register();
-		//this.GameInstance = new LoadBalancingClient();
-		//this.GameInstance.MasterServerAddress = "app.exitgamescloud.com:5055";
-        //this.GameInstance.ConnectToMaster("d787f7c3-5e04-46f2-96c3-5ced102c4817", "1.0", "unityPlayer");
 		
 		//Setup photon
 		if (!PhotonNetwork.connected)
 		{
-			//this.ConnectToMaster("d787f7c3-5e04-46f2-96c3-5ced102c4817", "1.0", "thePlayerName");
-			//PhotonNetwork.Connect("app.exitgamescloud.com", 5055, "Gridlock");
 			PhotonNetwork.ConnectUsingSettings("1.0");
 		}
 	}
@@ -35,11 +30,11 @@ public class GameManager : MonoBehaviour {
 			GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 300));
 			GUILayout.Label("Main Menu");
 			
-			GUILayout.Label("Join room");
+			GUILayout.Label("Create room");
 			GUILayout.BeginHorizontal();
 			roomName = GUILayout.TextField(roomName);
-			if (GUILayout.Button("Join"))
-				PhotonNetwork.CreateRoom(roomName);
+			if (GUILayout.Button("Create"))
+				PhotonNetwork.CreateRoom(roomName, true, true, MAX_PLAYERS_IN_ROOM);
 			GUILayout.EndHorizontal();
 			
 			GUILayout.Space(30);

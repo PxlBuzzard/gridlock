@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class bulletManager : MonoBehaviour 
 {
-	private const int NUM_BULLETS = 100;
+	private const int NUM_BULLETS = 30;
 	private Queue<OTSprite> inactiveBullets;
 	private List<OTSprite> activeBullets;
 	public OTSprite BulletPrefab;
@@ -28,11 +28,9 @@ public class bulletManager : MonoBehaviour
 	{
 		for (int i = 0; i < activeBullets.Count; i++)
 		{
-			activeBullets[i].GetComponent<bullet>().Update();
-			
 			if (activeBullets[i].GetComponent<bullet>().isDead)
 			{
-				activeBullets[i].position = new Vector3(-25, -25, 0);
+				activeBullets[i].position = new Vector3(0, 0, 0);
 				inactiveBullets.Enqueue(activeBullets[i]);
 				activeBullets.Remove(activeBullets[i]);
 				i--;

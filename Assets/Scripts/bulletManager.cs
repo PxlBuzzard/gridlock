@@ -47,7 +47,7 @@ public class bulletManager : MonoBehaviour
 			
 			aBullet.GetComponent<bullet>().Fire(player);
 			
-			print ("Bullet Fired: " + activeBullets.Count);
+			//print ("Bullet Fired: " + activeBullets.Count);
 		}
 	}
 }

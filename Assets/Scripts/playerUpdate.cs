@@ -12,6 +12,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	Vector3 correctPos = Vector3.zero;
 	
+	private bool isFiring;
+	
 	// Use this for initialization
 	void Start () 
 	{	
@@ -23,7 +25,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		for (int i = 0; i < player.animation.framesets.Length; i++)
 			player.animation.framesets[i].container = player.spriteContainer;
 		
-		print("made character");
+		//print("made character");
 	}
 	
 	// Update is called once per frame
@@ -32,44 +34,82 @@ public class playerUpdate : Photon.MonoBehaviour {
 		if (photonView.isMine)
 		{
 		   	string currentDirection = "";
-			
+			string currentAimingDirection = "";
 			//move player
-			if (Input.GetKey ("left") || Input.GetKey ("a"))
+			if (Input.GetButton("Move Left"))
 			{
 		        transform.Translate(-MOVE_SPEED * Time.deltaTime,0,0);	
 				currentDirection += "Left";
 			}
-			else if (Input.GetKey ("right") || Input.GetKey ("d"))
+			else if (Input.GetButton("Move Right"))
 			{
 		        transform.Translate(MOVE_SPEED * Time.deltaTime,0,0);
 				currentDirection += "Right";
 			}
 				
-			if (Input.GetKey ("down") || Input.GetKey ("s"))
+			if (Input.GetButton("Move Down"))
 			{
 		        transform.Translate(0,-MOVE_SPEED * Time.deltaTime,0);	
 				currentDirection += "Down";
 			}
-			else if (Input.GetKey ("up") || Input.GetKey ("w"))
+			else if (Input.GetButton("Move Up"))
 			{
 		        transform.Translate(0,MOVE_SPEED * Time.deltaTime,0);
 				currentDirection += "Up";
 			}
 			
+			// Player aiming
+			if (Input.GetButton("Aim Left"))
+			{	
+				currentAimingDirection += "Left";
+			}
+			else if (Input.GetButton("Aim Right"))
+			{
+				currentAimingDirection += "Right";
+			}
+				
+			if (Input.GetButton("Aim Down"))
+			{
+				currentAimingDirection += "Down";
+			}
+			else if (Input.GetButton("Aim Up"))
+			{
+				currentAimingDirection += "Up";
+			}
+			
 			if(currentDirection == "")
 			{
-				player.PlayLoop(lastDirection + "Static");
+				if (currentAimingDirection == "")
+				{
+					player.PlayLoop(lastDirection + "Static");
+				}
+				else
+				{
+					player.PlayLoop(currentAimingDirection  + "Static");
+				}
 			}
 			else
 			{
-				player.PlayLoop(currentDirection);
-				lastDirection = currentDirection;
+				if (currentAimingDirection == "")
+				{
+					player.PlayLoop(currentDirection);
+					lastDirection = currentDirection;
+				}
+				else
+				{
+					player.PlayLoop(currentAimingDirection);
+					lastDirection = currentAimingDirection;
+				}
 			}
 			
 			//fire bullets
 			if(Input.GetKey ("space"))
 			{
-				theBulletManager.Fire(player);
+				isFiring = true;
+			}
+			else
+			{
+				isFiring = false;
 			}
 			
 			//update bullets
@@ -90,7 +130,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 			{
 				player.PlayLoop(lastDirection);
 			}
-			print (lastDirection);
+			//print (lastDirection);
+			
+			
+		}
+		
+		if (isFiring)
+		{
+			theBulletManager.Fire(player);
 		}
 	}
 	
@@ -102,6 +149,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 			{
 				stream.SendNext(transform.position);
 				stream.SendNext(lastDirection);
+				stream.SendNext(isFiring);
 			}
 		}
 		else
@@ -110,6 +158,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 			{
 				correctPos = (Vector3)stream.ReceiveNext();
 				lastDirection = (string)stream.ReceiveNext();
+				isFiring = (bool)stream.ReceiveNext();
 			}
 		}
 	}

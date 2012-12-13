@@ -15,6 +15,12 @@ public class bullet : MonoBehaviour
 	{
 		timeToDelete = new Timer();
 		isDead = true;
+		thisBullet.onCollision = OnCollision;
+	}
+	
+	public void OnCollision(OTObject owner)
+	{
+		thisBullet.visible = false;
 	}
 	
 	// Update is called once per frame

@@ -82,10 +82,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 				if (currentAimingDirection == "")
 				{
 					player.PlayLoop(lastDirection + "Static");
+					
 				}
 				else
 				{
 					player.PlayLoop(currentAimingDirection  + "Static");
+					lastDirection = currentAimingDirection;
 				}
 			}
 			else

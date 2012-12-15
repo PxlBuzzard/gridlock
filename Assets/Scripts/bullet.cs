@@ -1,12 +1,13 @@
 using UnityEngine;
 using System.Collections;
 
-public class bullet : MonoBehaviour
+public class bullet : Photon.MonoBehaviour
 {
 	private const float DELETION_TIME = .5f;
 	private Vector2 speed;
 	private float speedMod = 0.5f;
 	public OTSprite thisBullet;
+	public OTSprite playerOwner;
 	private Timer timeToDelete;
 	public bool isDead;
 	
@@ -16,11 +17,6 @@ public class bullet : MonoBehaviour
 		timeToDelete = new Timer();
 		isDead = true;
 		thisBullet.onCollision = OnCollision;
-	}
-	
-	public void OnCollision(OTObject owner)
-	{
-		thisBullet.visible = false;
 	}
 	
 	// Update is called once per frame
@@ -34,7 +30,19 @@ public class bullet : MonoBehaviour
 			if (timeToDelete.Update())
 			{
 				isDead = true;
-				thisBullet.visible = false;
+			}
+		}
+	}
+	
+	public void OnCollision(OTObject owner)
+	{
+		if((owner.collisionObject.name == "PlayerPrefab(Clone)" || owner.collisionObject.name == "player-1") && thisBullet.collidable == true)
+		{	
+			isDead = true;
+			
+			if(playerOwner != owner.collisionObject)
+			{
+				owner.collisionObject.GetComponent<playerUpdate>().DeductHealth(1);
 			}
 		}
 	}
@@ -46,6 +54,7 @@ public class bullet : MonoBehaviour
 		timeToDelete.Countdown(DELETION_TIME);
 		isDead = false;
 		thisBullet.visible = true;
+		thisBullet.collidable = true;
 
         //Set Position and rotation based on player variables
         switch (player.GetComponent<playerUpdate>().lastDirection)

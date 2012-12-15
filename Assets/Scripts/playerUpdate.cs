@@ -9,10 +9,16 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public string lastDirection;
 	public OTAnimatingSprite player;
 	public bulletManager theBulletManager;
+	public healthBar theHealthBar;
+	
+	public int maxHealth;
+	public int currentHealth;
 	
 	Vector3 correctPos = Vector3.zero;
 	
 	private bool isFiring;
+	
+	private string playerNum;
 	
 	// Use this for initialization
 	void Start () 
@@ -25,7 +31,13 @@ public class playerUpdate : Photon.MonoBehaviour {
 		for (int i = 0; i < player.animation.framesets.Length; i++)
 			player.animation.framesets[i].container = player.spriteContainer;
 		
-		//print("made character");
+		playerNum = "P1";
+		
+		maxHealth = 75;
+		currentHealth = maxHealth;
+		theHealthBar.maxHealth = maxHealth;
+		theHealthBar.currentHealth = maxHealth;
+		theBulletManager.player = player;
 	}
 	
 	// Update is called once per frame
@@ -35,44 +47,45 @@ public class playerUpdate : Photon.MonoBehaviour {
 		{
 		   	string currentDirection = "";
 			string currentAimingDirection = "";
+			
 			//move player
-			if (Input.GetButton("Move Left"))
+			if (Input.GetAxis(playerNum + "Horizontal") < -0.3)
 			{
-		        transform.Translate(-MOVE_SPEED * Time.deltaTime,0,0);	
+		        transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);	
 				currentDirection += "Left";
 			}
-			else if (Input.GetButton("Move Right"))
+			else if (Input.GetAxis(playerNum + "Horizontal") > 0.3)
 			{
-		        transform.Translate(MOVE_SPEED * Time.deltaTime,0,0);
+		        transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
 				currentDirection += "Right";
 			}
 				
-			if (Input.GetButton("Move Down"))
+			if (Input.GetAxis(playerNum + "Vertical") < -0.3)
 			{
-		        transform.Translate(0,-MOVE_SPEED * Time.deltaTime,0);	
+		        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * MOVE_SPEED * Time.deltaTime,0);	
 				currentDirection += "Down";
 			}
-			else if (Input.GetButton("Move Up"))
+			else if (Input.GetAxis(playerNum + "Vertical") > 0.3)
 			{
-		        transform.Translate(0,MOVE_SPEED * Time.deltaTime,0);
+		        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * MOVE_SPEED * Time.deltaTime,0);
 				currentDirection += "Up";
 			}
 			
 			// Player aiming
-			if (Input.GetButton("Aim Left"))
+			if (Input.GetAxis(playerNum + "Horizontal Aiming") < -0.5)
 			{	
 				currentAimingDirection += "Left";
 			}
-			else if (Input.GetButton("Aim Right"))
+			else if (Input.GetAxis(playerNum + "Horizontal Aiming") > 0.5)
 			{
 				currentAimingDirection += "Right";
 			}
 				
-			if (Input.GetButton("Aim Down"))
+			if (Input.GetAxis(playerNum + "Vertical Aiming") < -0.5)
 			{
 				currentAimingDirection += "Down";
 			}
-			else if (Input.GetButton("Aim Up"))
+			else if (Input.GetAxis(playerNum + "Vertical Aiming") > 0.5)
 			{
 				currentAimingDirection += "Up";
 			}
@@ -105,7 +118,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 			}
 			
 			//fire bullets
-			if(Input.GetKey ("space"))
+			if(Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"))
 			{
 				isFiring = true;
 			}
@@ -132,9 +145,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 			{
 				player.PlayLoop(lastDirection);
 			}
-			//print (lastDirection);
 			
-			
+			theHealthBar.AdjustCurrentHealth(currentHealth);
 		}
 		
 		if (isFiring)
@@ -152,6 +164,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 				stream.SendNext(transform.position);
 				stream.SendNext(lastDirection);
 				stream.SendNext(isFiring);
+				stream.SendNext(currentHealth);
 			}
 		}
 		else
@@ -161,7 +174,24 @@ public class playerUpdate : Photon.MonoBehaviour {
 				correctPos = (Vector3)stream.ReceiveNext();
 				lastDirection = (string)stream.ReceiveNext();
 				isFiring = (bool)stream.ReceiveNext();
+				currentHealth = (int)stream.ReceiveNext();
 			}
+		}
+	}
+	
+	public void DeductHealth(int damage)
+	{
+		if (photonView.isMine)
+		{
+			currentHealth -= damage;
+			
+			if(currentHealth <= 0)
+			{
+				currentHealth = maxHealth;
+				player.position = Vector2.zero;
+			}
+			
+			theHealthBar.AdjustCurrentHealth(currentHealth);
 		}
 	}
 }

@@ -29,8 +29,9 @@ public class GameManager : MonoBehaviour {
 		if (PhotonNetwork.room == null)
 		{
 			GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 300));
+			if (GUILayout.Button("Click here to fill out the alpha feedback form :)"))
+				Application.OpenURL("https://docs.google.com/spreadsheet/viewform?formkey=dEVJY2NzYll4dC1OSWhFMklRcHY3TGc6MA");
 			GUILayout.Label("Main Menu");
-			
 			GUILayout.Label("Create room");
 			GUILayout.BeginHorizontal();
 			roomName = GUILayout.TextField(roomName);

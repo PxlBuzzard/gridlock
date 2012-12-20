@@ -132,26 +132,27 @@ public class OTTileMap : OTObject
 
     Vector3[] GetVertices(OTTileSet ts, OTTileMapLayer layer, Vector2 pos)
     {
-		
-		
         Vector2 _meshsize_ = new Vector2(1.0f/mapSize.x, 1.0f/mapSize.y);
         Vector2 _pivotPoint = new Vector2((pos.x-1) * _meshsize_.x * -1 - _meshsize_.x / 2, (pos.y-1) * _meshsize_.y + _meshsize_.y / 2); 
+		
+		print (mapSize.x + " " + mapSize.y);
+		
         // Vector2 _pivotPoint = new Vector2((pos.x-1) * _meshsize_.x * -1, (pos.y-1) * _meshsize_.y);
         _pivotPoint.x += .5f;
         _pivotPoint.y -= .5f;
 
         float dx = (ts.tileSize.x / mapTileSize.x) - 1;
         float dy = (ts.tileSize.y / mapTileSize.y) - 1;
-
+		
+		Vector2 _offset = new Vector2((layer.offsetX / mapTileSize.x) * _meshsize_.x, -1 * layer.offsetY / mapTileSize.y * _meshsize_.y);
+		
         return new Vector3[] { 
-                new Vector3(((_meshsize_.x/2) * -1) - _pivotPoint.x, (_meshsize_.y/2) - _pivotPoint.y + (dy * _meshsize_.y), layer.depth),
-                new Vector3((_meshsize_.x/2) - _pivotPoint.x + (dx * _meshsize_.x), (_meshsize_.y/2) - _pivotPoint.y + (dy * _meshsize_.y), layer.depth),
-                new Vector3((_meshsize_.x/2) - _pivotPoint.x + (dx * _meshsize_.x), ((_meshsize_.y/2) * -1) - _pivotPoint.y, layer.depth),
-                new Vector3(((_meshsize_.x/2) * -1) - _pivotPoint.x, ((_meshsize_.y/2) * -1) - _pivotPoint.y, layer.depth)
+                new Vector3(((_meshsize_.x/2) * -1) - _pivotPoint.x + _offset.x, (_meshsize_.y/2) - _pivotPoint.y + (dy * _meshsize_.y) + _offset.y, layer.depth),
+                new Vector3((_meshsize_.x/2) - _pivotPoint.x + (dx * _meshsize_.x) + _offset.x, (_meshsize_.y/2) - _pivotPoint.y + (dy * _meshsize_.y) + _offset.y, layer.depth),
+                new Vector3((_meshsize_.x/2) - _pivotPoint.x + (dx * _meshsize_.x) + _offset.x, ((_meshsize_.y/2) * -1) - _pivotPoint.y + _offset.y, layer.depth),
+                new Vector3(((_meshsize_.x/2) * -1) - _pivotPoint.x + _offset.x, ((_meshsize_.y/2) * -1) - _pivotPoint.y + _offset.y, layer.depth)
             };
     }
-	
-	
 
     int[] GetTriangles(int idx)
     {
@@ -617,6 +618,10 @@ public class OTTileMap : OTObject
                     XmlNodeList props = n.SelectSingleNode("properties").SelectNodes("property");
                     if (HasProp(props, "depth"))
                         l.depth = GetPropI(props, "depth");
+					if (HasProp(props, "offset-x"))
+						l.offsetX = GetPropI(props, "offset-x");
+					if (HasProp(props, "offset-x"))
+						l.offsetY = GetPropI(props, "offset-y");
                 }
                 catch (System.Exception)
                 {
@@ -992,5 +997,10 @@ public class OTTileMapLayer
 	/// <summary>
 	/// This layer will be included when true (default)
 	/// </summary>
-    public bool included = true;    
+    public bool included = true;  
+	/// <summary>
+	/// This layers offset distance
+	/// </summary>
+	public float offsetX;
+	public float offsetY;
 }

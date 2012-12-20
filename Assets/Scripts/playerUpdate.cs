@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Main player class.
+/// </summary>
 public class playerUpdate : Photon.MonoBehaviour {
 	
 	//public const int NUM_BULLETS = 20;
@@ -20,7 +23,9 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	private string playerNum;
 	
-	// Use this for initialization
+	/// <summary>
+	/// Start this instance.
+	/// </summary>
 	void Start () 
 	{	
 		lastDirection = "Down";
@@ -31,6 +36,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		for (int i = 0; i < player.animation.framesets.Length; i++)
 			player.animation.framesets[i].container = player.spriteContainer;
 		
+		//set player number for controller purposes
 		playerNum = "P1";
 		
 		maxHealth = 75;
@@ -40,7 +46,9 @@ public class playerUpdate : Photon.MonoBehaviour {
 		theBulletManager.player = player;
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Update this instance.
+	/// </summary>
 	void Update () 
 	{
 		if (photonView.isMine)
@@ -155,6 +163,15 @@ public class playerUpdate : Photon.MonoBehaviour {
 		}
 	}
 	
+	/// <summary>
+	/// Compacts data to send it to other players.
+	/// </summary>
+	/// <param name='stream'>
+	/// Stream.
+	/// </param>
+	/// <param name='info'>
+	/// Info.
+	/// </param>
 	void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.isWriting)
@@ -179,19 +196,48 @@ public class playerUpdate : Photon.MonoBehaviour {
 		}
 	}
 	
+	/// <summary>
+	/// Deducts the health.
+	/// </summary>
+	/// <param name='damage'>
+	/// Amount to damage the player by. (should be positive)
+	/// </param>
 	public void DeductHealth(int damage)
 	{
 		if (photonView.isMine)
 		{
 			currentHealth -= damage;
 			
+			//kill the player if he drops below 0 HP
 			if(currentHealth <= 0)
-			{
-				currentHealth = maxHealth;
-				player.position = Vector2.zero;
-			}
+				KillPlayer();
 			
 			theHealthBar.AdjustCurrentHealth(currentHealth);
+		}
+	}
+	
+	/// <summary>
+	/// Kills the player, respawns, and coin explosion.
+	/// </summary>
+	public void KillPlayer()
+	{
+		currentHealth = maxHealth;
+		player.position = Vector2.zero;
+		CoinExplosion(10);
+	}
+	
+	/// <summary>
+	/// ITS A COIN ASPOLSION UP IN HURR
+	/// </summary>
+	/// <param name='numCoins'>
+	/// Number of coins to make explode.
+	/// </param>
+	public void CoinExplosion(uint numCoins)
+	{
+		for (int i = 0; i < numCoins; i++)
+		{
+			//instantiate a coin prefab	
+			//prefab.Explode();
 		}
 	}
 }

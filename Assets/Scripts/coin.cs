@@ -24,6 +24,13 @@ public class coin : MonoBehaviour {
 	{
 		goToPlayer = false;
 		coinValue = 10;
+		
+		thisCoin.spriteContainer = OT.ContainerByName("PlayerSheet");
+		
+		thisCoin.animation = OT.AnimationByName("PlayerAnim");
+		
+		for (int i = 0; i < thisCoin.animation.framesets.Length; i++)
+			thisCoin.animation.framesets[i].container = thisCoin.spriteContainer;
 	}
 	
 	/// <summary>

@@ -135,8 +135,6 @@ public class OTTileMap : OTObject
         Vector2 _meshsize_ = new Vector2(1.0f/mapSize.x, 1.0f/mapSize.y);
         Vector2 _pivotPoint = new Vector2((pos.x-1) * _meshsize_.x * -1 - _meshsize_.x / 2, (pos.y-1) * _meshsize_.y + _meshsize_.y / 2); 
 		
-		print (mapSize.x + " " + mapSize.y);
-		
         // Vector2 _pivotPoint = new Vector2((pos.x-1) * _meshsize_.x * -1, (pos.y-1) * _meshsize_.y);
         _pivotPoint.x += .5f;
         _pivotPoint.y -= .5f;

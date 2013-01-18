@@ -21,7 +21,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	private bool isFiring;
 	
-	private string playerNum;
+	public string playerNum;
 	
 	/// <summary>
 	/// Start this instance.
@@ -37,7 +37,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 			player.animation.framesets[i].container = player.spriteContainer;
 		
 		//set player number for controller purposes
-		playerNum = "P1";
+		//playerNum = "P1";
 		
 		maxHealth = 75;
 		currentHealth = maxHealth;
@@ -138,7 +138,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 			//update bullets
 			theBulletManager.Update();
 			
-			OT.view.position = new Vector2(player.position.x, player.position.y);
+		//	OT.view.position = new Vector2(player.position.x, player.position.y);
 		}
 		else
 		{

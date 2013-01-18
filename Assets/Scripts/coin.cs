@@ -16,6 +16,7 @@ public class coin : MonoBehaviour {
 	private bool goToPlayer;
 	public OTAnimatingSprite player;
 	public OTAnimatingSprite thisCoin;
+	public bool isDead;
 	
 	/// <summary>
 	/// Start this instance.
@@ -63,7 +64,7 @@ public class coin : MonoBehaviour {
 	/// <summary>
 	/// Give the coin a random direction and velocity.
 	/// </summary>
-	public void Explode()
+	public void Explode(OTAnimatingSprite player)
 	{
 		//random direction
 		float rads = Random.value * Mathf.PI * 2;
@@ -86,8 +87,8 @@ public class coin : MonoBehaviour {
 	{
 		if((owner.collisionObject == player) && thisCoin.collidable)
 		{	
-			//isDead = true;
-			//owner.collisionObject.GetComponent<playerUpdate>().Coins(coinValue);
+			isDead = true;
+			owner.collisionObject.GetComponent<playerUpdate>().numCoins += coinValue;
 		}
 	}
 }

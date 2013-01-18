@@ -6,7 +6,6 @@ using System.Collections;
 /// </summary>
 public class playerUpdate : Photon.MonoBehaviour {
 	
-	//public const int NUM_BULLETS = 20;
 	private const float ANIMATE_THRESHOLD = 0.075f;
 	public const int MOVE_SPEED = 5;
 	public string lastDirection;
@@ -14,20 +13,27 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public bulletManager theBulletManager;
 	public healthBar theHealthBar;
 	
+	public int numCoins;
+	public coinManager theCoinManager;
+	
 	public int maxHealth;
 	public int currentHealth;
 	
 	Vector3 correctPos = Vector3.zero;
 	
 	private bool isFiring;
+	private bool isDead;
 	
 	private string playerNum;
 	
 	/// <summary>
 	/// Start this instance.
 	/// </summary>
-	void Start () 
+	void Start() 
 	{	
+		//this should be read from a save file
+		numCoins = 0;
+		
 		lastDirection = "Down";
 		player.spriteContainer = OT.ContainerByName("PlayerSheet");
 		
@@ -39,7 +45,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 		//set player number for controller purposes
 		playerNum = "P1";
 		
-		maxHealth = 75;
+		maxHealth = 300;
+		isDead = false;
 		currentHealth = maxHealth;
 		theHealthBar.maxHealth = maxHealth;
 		theHealthBar.currentHealth = maxHealth;
@@ -49,9 +56,9 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// <summary>
 	/// Update this instance.
 	/// </summary>
-	void Update () 
+	void Update() 
 	{
-		if (photonView.isMine)
+		if (photonView.isMine && !isDead)
 		{
 		   	string currentDirection = "";
 			string currentAimingDirection = "";
@@ -111,7 +118,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 					lastDirection = currentAimingDirection;
 				}
 			}
-			else
+			else if (!isDead)
 			{
 				if (currentAimingDirection == "")
 				{
@@ -161,6 +168,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 		{
 			theBulletManager.Fire(player);
 		}
+		
+		if (isDead)
+		{
+			player.alpha -= .005f;
+		}
+		
+		//test
+		DeductHealth(1);
 	}
 	
 	/// <summary>
@@ -209,21 +224,52 @@ public class playerUpdate : Photon.MonoBehaviour {
 			currentHealth -= damage;
 			
 			//kill the player if he drops below 0 HP
-			if(currentHealth <= 0)
-				KillPlayer();
+			if(currentHealth <= 0 && !isDead)
+				StartCoroutine(KillPlayer());
+			
+			StartCoroutine(HealthFlash());
 			
 			theHealthBar.AdjustCurrentHealth(currentHealth);
 		}
 	}
 	
 	/// <summary>
+	/// Flashes the player red when shot.
+	/// </summary>
+	IEnumerator HealthFlash()
+	{
+		if (player.tintColor == Color.white)
+			player.tintColor = Color.red;
+		
+		yield return new WaitForSeconds(.3f);
+		
+		if (player.tintColor == Color.white)
+			player.tintColor = Color.white;
+	}
+	
+	/// <summary>
 	/// Kills the player, respawns, and coin explosion.
 	/// </summary>
-	public void KillPlayer()
+	IEnumerator KillPlayer()
 	{
-		currentHealth = maxHealth;
-		player.position = Vector2.zero;
-		CoinExplosion(10);
+		if (!isDead)
+		{
+			CoinExplosion(10);
+			player.alpha = .5f;
+			isDead = true;
+		}
+		
+		yield return new WaitForSeconds(3f);
+		
+		if (isDead)
+		{
+			currentHealth = maxHealth;
+			player.alpha = 1;
+			isDead = false;
+			
+			//switch to respawn location
+			player.position = Vector2.zero;
+		}
 	}
 	
 	/// <summary>

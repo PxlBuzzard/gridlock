@@ -55,8 +55,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// </summary>
 	void Update() 
 	{
-		print (playerNum + " " + Input.GetAxis(playerNum + "Horizontal"));
-		
 		if (photonView.isMine && !isDead)
 		{
 		   	string currentDirection = "";

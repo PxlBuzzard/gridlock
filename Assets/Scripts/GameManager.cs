@@ -14,6 +14,10 @@ public class GameManager : Photon.MonoBehaviour {
 	private float yDist;
 	private bool p2exists = false;
 	
+	private enum GameState { Paused, InGame };
+	
+	private GameState gameState = GameState.Paused;
+	
 	void Start() 
 	{
 		//needed for Photon
@@ -31,7 +35,7 @@ public class GameManager : Photon.MonoBehaviour {
 	
 	void OnGUI() 
 	{
-		if (PhotonNetwork.room == null)
+		if (PhotonNetwork.room == null || gameState == GameState.Paused)
 		{
 			GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 300));
 			if (GUILayout.Button("Click here to fill out the alpha feedback form :)"))
@@ -41,7 +45,14 @@ public class GameManager : Photon.MonoBehaviour {
 			GUILayout.BeginHorizontal();
 			roomName = GUILayout.TextField(roomName);
 			if (GUILayout.Button("Create"))
+			{
+				if (PhotonNetwork.room != null)
+				{
+					PhotonNetwork.LeaveRoom();
+				}
 				PhotonNetwork.CreateRoom(roomName, true, true, MAX_PLAYERS_IN_ROOM);
+				gameState = GameState.InGame;
+			}
 			GUILayout.EndHorizontal();
 			GUILayout.Space(30);
 			GUILayout.Label("Room Listing");
@@ -51,7 +62,14 @@ public class GameManager : Photon.MonoBehaviour {
 			{
 				GUILayout.BeginHorizontal();
 				if (GUILayout.Button(room.name))
+				{
+					if (PhotonNetwork.room != null)
+					{
+						PhotonNetwork.LeaveRoom();
+					}
 					PhotonNetwork.JoinRoom(room.name);
+					gameState = GameState.InGame;
+				}
 				GUILayout.Label(room.playerCount + " / " + room.maxPlayers);
 				GUILayout.EndHorizontal();
 			}
@@ -86,6 +104,14 @@ public class GameManager : Photon.MonoBehaviour {
 			p2exists = true;
 		}
 		
+		if (Input.GetButtonDown("Pause") && gameState == GameState.InGame)
+		{
+			gameState = GameState.Paused;
+		}
+		else if (gameState == GameState.Paused && Input.GetButtonDown("Pause"))
+		{
+			gameState = GameState.InGame;
+		}
 		
 		if (GameObject.Find("PlayerTwoPrefab(Clone)") != null)
 		{

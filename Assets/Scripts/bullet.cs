@@ -5,28 +5,32 @@ public class bullet : Photon.MonoBehaviour
 {
 	private const float DELETION_TIME = .5f;
 	private Vector2 speed;
-	private float speedMod = 0.5f;
+	private float speedMod = 30f;
 	public OTSprite thisBullet;
 	public OTSprite playerOwner;
 	private Timer timeToDelete;
 	public bool isDead;
 	
-	// Use this for initialization
-	public void Start () 
+	/// <summary>
+	/// Start this instance.
+	/// </summary>
+	public void Start() 
 	{
 		timeToDelete = new Timer();
 		isDead = true;
 		thisBullet.onCollision = OnCollision;
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Update this instance.
+	/// </summary>
 	public void Update()
 	{
 		if(!isDead)
 		{
-			thisBullet.position += speed;
+			thisBullet.position += speed * Time.deltaTime;
 			
-			//kill the bullet if it's been alive long enough
+			//kill the bullet if it has been alive long enough
 			if (timeToDelete.Update())
 			{
 				isDead = true;
@@ -34,20 +38,33 @@ public class bullet : Photon.MonoBehaviour
 		}
 	}
 	
-	public void OnCollision(OTObject owner)
+	/// <summary>
+	/// Fires when bullet collides with another object.
+	/// </summary>
+	/// <param name='owner'>
+	/// The bullet.
+	/// </param>
+	public void OnCollision(OTObject bullet)
 	{
-		if((owner.collisionObject.name == "PlayerPrefab(Clone)" || owner.collisionObject.name == "player-1") && thisBullet.collidable == true)
+		if ((bullet.collisionObject.name == "PlayerPrefab(Clone)" || bullet.collisionObject.name == "player-1") && thisBullet.collidable == true)
 		{	
-			isDead = true;
-			
-			if(playerOwner != owner.collisionObject)
+			if (playerOwner != bullet.collisionObject)
 			{
-				owner.collisionObject.GetComponent<playerUpdate>().DeductHealth(1);
+				isDead = true;
+				
+				//switch to damage on gun
+				bullet.collisionObject.GetComponent<playerUpdate>().DeductHealth(3);
 			}
 		}
 	}
 	
-	public void Fire (OTAnimatingSprite player)  
+	/// <summary>
+	/// Fires a bullet.
+	/// </summary>
+	/// <param name='player'>
+	/// The player shooting the bullet.
+	/// </param>
+	public void Fire(OTAnimatingSprite player)  
 	{
 		speed = Vector2.zero;
 		Vector2 pos = thisBullet.position;
@@ -62,7 +79,7 @@ public class bullet : Photon.MonoBehaviour
             case "Down":
 			case "DownStatic":
                 {
-				    thisBullet.rotation = Mathf.PI * 3 / 2;
+				    thisBullet.rotation = 270;
                     speed = new Vector2(0.0f, -1.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
@@ -71,7 +88,7 @@ public class bullet : Photon.MonoBehaviour
             case "LeftDown":
 			case "LeftDownStatic":
                 {
-			        thisBullet.rotation = Mathf.PI * 5 / 4;
+			        thisBullet.rotation = 235;
                     speed = new Vector2(-1.0f, -1.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
@@ -80,7 +97,7 @@ public class bullet : Photon.MonoBehaviour
             case "Left":
 			case "LeftStatic":
                 {
-                    thisBullet.rotation = Mathf.PI;
+                    thisBullet.rotation = 180;
                     speed = new Vector2(-1.0f, 0.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
@@ -89,7 +106,7 @@ public class bullet : Photon.MonoBehaviour
             case "LeftUp":
 			case "LeftUpStatic":
                 {
-					thisBullet.rotation = Mathf.PI * 3 / 4;
+					thisBullet.rotation = 135;
                     speed = new Vector2(-1.0f, 1.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
@@ -98,7 +115,7 @@ public class bullet : Photon.MonoBehaviour
             case "Up":
 			case "UpStatic":
                 {
-			        thisBullet.rotation = Mathf.PI / 2;
+			        thisBullet.rotation = 90;
                     speed = new Vector2(0.0f, 1.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
@@ -108,7 +125,7 @@ public class bullet : Photon.MonoBehaviour
 			case "RightUpStatic":
                 {
 
-			        thisBullet.rotation = Mathf.PI / 4;
+			        thisBullet.rotation = 45;
                     speed = new Vector2(1f, 1f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
@@ -126,7 +143,7 @@ public class bullet : Photon.MonoBehaviour
             case "RightDown":
 			case "RightDownStatic":
                 {
-                    thisBullet.rotation = Mathf.PI * 7 / 4;
+                    thisBullet.rotation = 315;
                     speed = new Vector2(1.0f, -1.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
@@ -138,7 +155,5 @@ public class bullet : Photon.MonoBehaviour
 		
         speed.Normalize();
         speed = speed * speedMod;
-		
-		//speed = new Vector2(5, 5);
 	}
 }

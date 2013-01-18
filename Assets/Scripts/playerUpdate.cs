@@ -6,7 +6,6 @@ using System.Collections;
 /// </summary>
 public class playerUpdate : Photon.MonoBehaviour {
 	
-	//public const int NUM_BULLETS = 20;
 	private const float ANIMATE_THRESHOLD = 0.075f;
 	public const int MOVE_SPEED = 5;
 	public string lastDirection;
@@ -14,20 +13,27 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public bulletManager theBulletManager;
 	public healthBar theHealthBar;
 	
+	public int numCoins;
+	public coinManager theCoinManager;
+	
 	public int maxHealth;
 	public int currentHealth;
 	
 	Vector3 correctPos = Vector3.zero;
 	
 	private bool isFiring;
+	private bool isDead;
 	
 	public string playerNum;
 	
 	/// <summary>
 	/// Start this instance.
 	/// </summary>
-	void Start () 
+	void Start() 
 	{	
+		//this should be read from a save file
+		numCoins = 0;
+		
 		lastDirection = "Down";
 		player.spriteContainer = OT.ContainerByName("PlayerSheet");
 		
@@ -36,10 +42,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 		for (int i = 0; i < player.animation.framesets.Length; i++)
 			player.animation.framesets[i].container = player.spriteContainer;
 		
-		//set player number for controller purposes
-		//playerNum = "P1";
-		
-		maxHealth = 75;
+		maxHealth = 300;
+		isDead = false;
 		currentHealth = maxHealth;
 		theHealthBar.maxHealth = maxHealth;
 		theHealthBar.currentHealth = maxHealth;
@@ -49,9 +53,11 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// <summary>
 	/// Update this instance.
 	/// </summary>
-	void Update () 
+	void Update() 
 	{
-		if (photonView.isMine)
+		print (playerNum + " " + Input.GetAxis(playerNum + "Horizontal"));
+		
+		if (photonView.isMine && !isDead)
 		{
 		   	string currentDirection = "";
 			string currentAimingDirection = "";
@@ -111,7 +117,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 					lastDirection = currentAimingDirection;
 				}
 			}
-			else
+			else if (!isDead)
 			{
 				if (currentAimingDirection == "")
 				{
@@ -126,21 +132,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 			}
 			
 			//fire bullets
-			if(Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"))
-			{
-				isFiring = true;
-			}
-			else
-			{
-				isFiring = false;
-			}
+			isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"));
 			
 			//update bullets
 			theBulletManager.Update();
 			
 		//	OT.view.position = new Vector2(player.position.x, player.position.y);
 		}
-		else
+		else if (!photonView.isMine)
 		{
 			transform.position = Vector3.Lerp(transform.position, correctPos, Time.deltaTime * 5);
 			
@@ -160,6 +159,11 @@ public class playerUpdate : Photon.MonoBehaviour {
 		if (isFiring)
 		{
 			theBulletManager.Fire(player);
+		}
+		
+		if (isDead)
+		{
+			player.alpha -= .005f;	
 		}
 	}
 	
@@ -204,26 +208,64 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// </param>
 	public void DeductHealth(int damage)
 	{
-		if (photonView.isMine)
+		if (photonView.isMine && !isDead)
 		{
 			currentHealth -= damage;
 			
 			//kill the player if he drops below 0 HP
 			if(currentHealth <= 0)
-				KillPlayer();
+				StartCoroutine(KillPlayer());
 			
 			theHealthBar.AdjustCurrentHealth(currentHealth);
 		}
+		
+		if (!isDead)
+			StartCoroutine(HealthFlash());
+	}
+	
+	/// <summary>
+	/// Flashes the player red when shot.
+	/// </summary>
+	IEnumerator HealthFlash()
+	{
+		player.tintColor = Color.red;
+		
+		yield return new WaitForSeconds(.2f);
+		
+		player.tintColor = Color.white;
 	}
 	
 	/// <summary>
 	/// Kills the player, respawns, and coin explosion.
 	/// </summary>
-	public void KillPlayer()
+	IEnumerator KillPlayer()
 	{
-		currentHealth = maxHealth;
-		player.position = Vector2.zero;
 		CoinExplosion(10);
+		player.alpha = .5f;
+		isDead = true;
+		isFiring = false;
+		player.collidable = false;
+			
+		yield return new WaitForSeconds(3f);
+		
+		Respawn();
+	}
+	
+	/// <summary>
+	/// Respawn the player.
+	/// </summary>
+	void Respawn()
+	{
+		player.alpha = 1;
+		isDead = false;
+		theHealthBar.AdjustCurrentHealth(maxHealth);
+		player.collidable = true;
+		
+		//make player invincible for 3 seconds after spawn
+		currentHealth = maxHealth;
+		
+		//switch to respawn location
+		player.position = Vector2.zero;
 	}
 	
 	/// <summary>

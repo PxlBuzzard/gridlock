@@ -5,7 +5,7 @@ public class bullet : Photon.MonoBehaviour
 {
 	private const float DELETION_TIME = .5f;
 	private Vector2 speed;
-	private float speedMod = 0.5f;
+	private float speedMod = 30f;
 	public OTSprite thisBullet;
 	public OTSprite playerOwner;
 	private Timer timeToDelete;
@@ -28,7 +28,7 @@ public class bullet : Photon.MonoBehaviour
 	{
 		if(!isDead)
 		{
-			thisBullet.position += speed;
+			thisBullet.position += speed * Time.deltaTime;
 			
 			//kill the bullet if it has been alive long enough
 			if (timeToDelete.Update())
@@ -44,15 +44,16 @@ public class bullet : Photon.MonoBehaviour
 	/// <param name='owner'>
 	/// The bullet.
 	/// </param>
-	public void OnCollision(OTObject owner)
+	public void OnCollision(OTObject bullet)
 	{
-		if((owner.collisionObject.name == "PlayerPrefab(Clone)" || owner.collisionObject.name == "player-1") && thisBullet.collidable == true)
+		if ((bullet.collisionObject.name == "PlayerPrefab(Clone)" || bullet.collisionObject.name == "player-1") && thisBullet.collidable == true)
 		{	
-			isDead = true;
-			
-			if(playerOwner != owner.collisionObject)
+			if (playerOwner != bullet.collisionObject)
 			{
-				owner.collisionObject.GetComponent<playerUpdate>().DeductHealth(1);
+				isDead = true;
+				
+				//switch to damage on gun
+				bullet.collisionObject.GetComponent<playerUpdate>().DeductHealth(3);
 			}
 		}
 	}
@@ -105,7 +106,7 @@ public class bullet : Photon.MonoBehaviour
             case "LeftUp":
 			case "LeftUpStatic":
                 {
-					thisBullet.rotation = 225;
+					thisBullet.rotation = 135;
                     speed = new Vector2(-1.0f, 1.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;

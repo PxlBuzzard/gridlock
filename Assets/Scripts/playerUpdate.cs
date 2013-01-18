@@ -133,21 +133,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 			}
 			
 			//fire bullets
-			if(Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"))
-			{
-				isFiring = true;
-			}
-			else
-			{
-				isFiring = false;
-			}
+			isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"));
 			
 			//update bullets
 			theBulletManager.Update();
 			
 			OT.view.position = new Vector2(player.position.x, player.position.y);
 		}
-		else
+		else if (!photonView.isMine)
 		{
 			transform.position = Vector3.Lerp(transform.position, correctPos, Time.deltaTime * 5);
 			
@@ -171,11 +164,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 		
 		if (isDead)
 		{
-			player.alpha -= .005f;
+			player.alpha -= .005f;	
 		}
-		
-		//test
-		DeductHealth(1);
 	}
 	
 	/// <summary>
@@ -219,18 +209,19 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// </param>
 	public void DeductHealth(int damage)
 	{
-		if (photonView.isMine)
+		if (photonView.isMine && !isDead)
 		{
 			currentHealth -= damage;
 			
 			//kill the player if he drops below 0 HP
-			if(currentHealth <= 0 && !isDead)
+			if(currentHealth <= 0)
 				StartCoroutine(KillPlayer());
-			
-			StartCoroutine(HealthFlash());
 			
 			theHealthBar.AdjustCurrentHealth(currentHealth);
 		}
+		
+		if (!isDead)
+			StartCoroutine(HealthFlash());
 	}
 	
 	/// <summary>
@@ -238,13 +229,11 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// </summary>
 	IEnumerator HealthFlash()
 	{
-		if (player.tintColor == Color.white)
-			player.tintColor = Color.red;
+		player.tintColor = Color.red;
 		
-		yield return new WaitForSeconds(.3f);
+		yield return new WaitForSeconds(.2f);
 		
-		if (player.tintColor == Color.white)
-			player.tintColor = Color.white;
+		player.tintColor = Color.white;
 	}
 	
 	/// <summary>
@@ -252,24 +241,32 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// </summary>
 	IEnumerator KillPlayer()
 	{
-		if (!isDead)
-		{
-			CoinExplosion(10);
-			player.alpha = .5f;
-			isDead = true;
-		}
-		
+		CoinExplosion(10);
+		player.alpha = .5f;
+		isDead = true;
+		isFiring = false;
+		player.collidable = false;
+			
 		yield return new WaitForSeconds(3f);
 		
-		if (isDead)
-		{
-			currentHealth = maxHealth;
-			player.alpha = 1;
-			isDead = false;
-			
-			//switch to respawn location
-			player.position = Vector2.zero;
-		}
+		Respawn();
+	}
+	
+	/// <summary>
+	/// Respawn the player.
+	/// </summary>
+	void Respawn()
+	{
+		player.alpha = 1;
+		isDead = false;
+		theHealthBar.AdjustCurrentHealth(maxHealth);
+		player.collidable = true;
+		
+		//make player invincible for 3 seconds after spawn
+		currentHealth = maxHealth;
+		
+		//switch to respawn location
+		player.position = Vector2.zero;
 	}
 	
 	/// <summary>

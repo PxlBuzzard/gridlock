@@ -87,13 +87,15 @@ public class GameManager : Photon.MonoBehaviour {
 	void OnJoinedRoom()
 	{
 		PhotonNetwork.Instantiate("PlayerOnePrefab", spawnPoint, Quaternion.identity, 0);
-		PhotonNetwork.Instantiate("MapPrefab", new Vector3(0, 0, 0), Quaternion.identity, 0);
+		Instantiate(Resources.Load("MapPrefab"), Vector3.zero, Quaternion.identity);
+		
 	}
 	
 	//TODO: Remove stuff if you leave a room
 	void OnLeftLobby()
 	{
 		//delete all the stuff
+		print ("a player left the room");
 	}
 	
 	void Update()

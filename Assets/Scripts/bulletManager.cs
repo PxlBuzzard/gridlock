@@ -19,8 +19,8 @@ public class bulletManager : Photon.MonoBehaviour
 		for (int i = 0; i < NUM_BULLETS; i++) 
 		{
 			OTSprite aBullet = (OTSprite)Instantiate(BulletPrefab);
-			(aBullet as OTSprite).position = new Vector3(-25, -25, 0);
-			//aBullet.collidable = false;
+			aBullet.collidable = false;
+			aBullet.visible = false;
 			aBullet.GetComponent<bullet>().playerOwner = player;
 			inactiveBullets.Enqueue(aBullet);
 		}

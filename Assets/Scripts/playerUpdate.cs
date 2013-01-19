@@ -161,8 +161,11 @@ public class playerUpdate : Photon.MonoBehaviour {
 		
 		if (isDead)
 		{
-			player.alpha -= .005f;	
+			player.alpha -= .005f;
+			theHealthBar.barOpacity(.005f, true);
 		}
+		
+		DeductHealth(1);
 	}
 	
 	/// <summary>
@@ -218,7 +221,10 @@ public class playerUpdate : Photon.MonoBehaviour {
 		}
 		
 		if (!isDead)
+		{
+			StopCoroutine("HealthFlash");
 			StartCoroutine(HealthFlash());
+		}
 	}
 	
 	/// <summary>
@@ -240,9 +246,11 @@ public class playerUpdate : Photon.MonoBehaviour {
 	{
 		CoinExplosion(10);
 		player.alpha = .5f;
+		theHealthBar.barOpacity(.5f, true);
 		isDead = true;
 		isFiring = false;
 		player.collidable = false;
+		player.PlayLoop(lastDirection + "Static");
 			
 		yield return new WaitForSeconds(3f);
 		
@@ -257,6 +265,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		player.alpha = 1;
 		isDead = false;
 		theHealthBar.AdjustCurrentHealth(maxHealth);
+		theHealthBar.barOpacity(1f, false);
 		player.collidable = true;
 		
 		//make player invincible for 3 seconds after spawn

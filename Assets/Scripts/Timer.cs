@@ -42,14 +42,19 @@ public class Timer {
 	/// </returns>
 	public bool Update () 
 	{
-		currentTime -= Time.deltaTime;
-		
-		if (currentTime <= 0)
+		if(isRunning)
 		{
-			isRunning = false;
-			isFinished = true;
-			return isFinished;
+			currentTime -= Time.deltaTime;
+			
+			if (currentTime <= 0)
+			{
+				isRunning = false;
+				isFinished = true;
+				return isFinished;
+			}
+			return false;
 		}
-		return false;
+		
+		return isFinished;
 	}
 }

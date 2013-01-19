@@ -22,6 +22,15 @@ public class Timer {
 	}
 	
 	/// <summary>
+	/// Reset the timer.
+	/// </summary>
+	public void Reset ()
+	{
+		isFinished = false;
+		isRunning = false;
+	}
+	
+	/// <summary>
 	/// Countdown timer.
 	/// </summary>
 	/// <param name='countdownTime'>

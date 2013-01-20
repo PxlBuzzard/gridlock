@@ -16,6 +16,7 @@ public class GameManager : Photon.MonoBehaviour {
 	private bool p2exists = false;
 	private string mute = "Mute";
 	private Timer timer = new Timer();
+	public Texture2D superCompanyLogo;
 	public Texture2D logoText;
 	public Texture2D logoPlanet;
 	public Texture2D pressStart;
@@ -62,18 +63,13 @@ public class GameManager : Photon.MonoBehaviour {
 					if (timer.isFinished)
 					{
 						// (Fade in)Super Company presents...(fade out)
-						GUIStyle companyStyle = new GUIStyle();
-						companyStyle.normal.background = new Texture2D(0, 0);
-						Color companyColor = Color.white;
-						companyColor.a = Mathf.Sin((Time.fixedTime - .95f) * 1f);
-						companyStyle.normal.textColor = companyColor;
-						companyStyle.fontSize = 32;
+						Color startColor = Color.white;
+						startColor.a = Mathf.Sin((Time.fixedTime - .95f) * 1f);
+						GUI.color = startColor;
 			
-						if (companyStyle.normal.textColor.a > -0.45f)
+						if (startColor.a > -0.45f)
 						{
-							GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 200) / 2, 400, 300));
-								GUILayout.Label("Super Company presents", companyStyle);
-							GUILayout.EndArea();
+							GUI.DrawTexture(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 200), superCompanyLogo);
 						}
 						else
 						{
@@ -95,7 +91,7 @@ public class GameManager : Photon.MonoBehaviour {
 			case GameState.MainMenu:
 				{
 					//planet
-					GUILayout.BeginArea(new Rect((Screen.width - 1000) / 2, Mathf.Sin(.5f * (Time.time / 2) * (Screen.height - 900) / 2) * 2, 1000, 1000));
+					GUILayout.BeginArea(new Rect((Screen.width - 1000) / 2, Mathf.Sin((Time.time / 8f) * (Screen.height - 900) / 2), 1000, 1000));
 						GUILayout.Label(logoPlanet);
 					GUILayout.EndArea();
 					
@@ -118,6 +114,7 @@ public class GameManager : Photon.MonoBehaviour {
 					break;
 				}
 			
+			//TODO: load the map during this time, load player when they leave this screen
 			case GameState.Loading:
 				{
 					if (timer.isFinished)
@@ -168,15 +165,20 @@ public class GameManager : Photon.MonoBehaviour {
 			
 			case GameState.Paused:
 				{
-					
+					if (GUILayout.Button(mute))
+					{
+						if (!AudioListener.pause)
+						{
+							AudioListener.pause = true;
+							mute = "Unmute";
+						} else {
+							AudioListener.pause = false;
+							mute = "Mute";
+						}
+					}
 					break;
 				}
 		}
-		// picture of controls
-		// loading into server... (load map, don't spawn player)
-		// Press any button to continue
-		
-		// PAUSE MENU
 		
 		/*
 		if (PhotonNetwork.room == null || gameState == GameState.Paused)
@@ -191,7 +193,6 @@ public class GameManager : Photon.MonoBehaviour {
 					AudioListener.pause = false;
 					mute = "Mute";
 				}
-				
 			}
 			
 			GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 300));

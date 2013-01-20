@@ -10,7 +10,9 @@ public class bulletManager : Photon.MonoBehaviour
 	public OTSprite player;
 	public OTSprite BulletPrefab;
 
-	// Use this for initialization
+	/// <summary>
+	/// Start this instance.
+	/// </summary>
 	void Start () 
 	{
 		inactiveBullets = new Queue<OTSprite>();
@@ -26,15 +28,17 @@ public class bulletManager : Photon.MonoBehaviour
 		}
 	}
 	
-	// Update is called once per frame
-	public void Update () 
+	/// <summary>
+	/// Update this instance.
+	/// </summary>
+	void Update () 
 	{	
 		for (int i = 0; i < activeBullets.Count; i++)
 		{
 			if (activeBullets[i].GetComponent<bullet>().isDead)
 			{
 				activeBullets[i].collidable = false;
-				activeBullets[i].position = new Vector3(0, 0, 0);
+				activeBullets[i].position = Vector3.zero;
 				activeBullets[i].visible = false;
 				inactiveBullets.Enqueue(activeBullets[i]);
 				activeBullets.Remove(activeBullets[i]);
@@ -43,14 +47,17 @@ public class bulletManager : Photon.MonoBehaviour
 		}
 	}
 	
-	public void Fire (OTAnimatingSprite player)
+	/// <summary>
+	/// Fire a bullet.
+	/// </summary>
+	public void Fire ()
 	{
 		if(inactiveBullets.Count > 0)
 		{
 			OTSprite aBullet = inactiveBullets.Dequeue();
 			activeBullets.Add(aBullet);
 			
-			aBullet.GetComponent<bullet>().Fire(player);
+			aBullet.GetComponent<bullet>().Fire();
 		}
 	}
 }

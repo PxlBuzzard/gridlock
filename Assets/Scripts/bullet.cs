@@ -64,10 +64,7 @@ public class bullet : Photon.MonoBehaviour
 	/// <summary>
 	/// Fires a bullet.
 	/// </summary>
-	/// <param name='player'>
-	/// The player shooting the bullet.
-	/// </param>
-	public void Fire(OTAnimatingSprite player)  
+	public void Fire()  
 	{
 		speed = Vector2.zero;
 		Vector2 pos = thisBullet.position;
@@ -77,24 +74,24 @@ public class bullet : Photon.MonoBehaviour
 		thisBullet.collidable = true;
 
         //Set Position and rotation based on player variables
-        switch (player.GetComponent<playerUpdate>().lastDirection)
+        switch (playerOwner.GetComponent<playerUpdate>().lastDirection)
         {
             case "Down":
 			case "DownStatic":
                 {
 				    thisBullet.rotation = 270;
                     speed = new Vector2(0.0f, -1 * VERT_BULLET_SPEED);
-                    pos.x = player.position.x;
-                    pos.y = player.position.y;
+                    pos.x = playerOwner.position.x;
+                    pos.y = playerOwner.position.y;
                     break;
                 }
             case "LeftDown":
 			case "LeftDownStatic":
                 {
-			        thisBullet.rotation = 235;
+			        thisBullet.rotation = 210.6f;
                     speed = new Vector2(-1 * HORZ_BULLET_SPEED, -1 * VERT_BULLET_SPEED);
-                    pos.x = player.position.x;
-                    pos.y = player.position.y;
+                    pos.x = playerOwner.position.x;
+                    pos.y = playerOwner.position.y;
                     break;
                 }
             case "Left":
@@ -102,17 +99,18 @@ public class bullet : Photon.MonoBehaviour
                 {
                     thisBullet.rotation = 180;
                     speed = new Vector2(-1 * HORZ_BULLET_SPEED, 0.0f);
-                    pos.x = player.position.x;
-                    pos.y = player.position.y;
+                    pos.x = playerOwner.position.x;
+                    pos.y = playerOwner.position.y;
                     break;
                 }
             case "LeftUp":
 			case "LeftUpStatic":
                 {
-					thisBullet.rotation = 135;
+					thisBullet.rotation = 149.4f;
                     speed = new Vector2(-1 * HORZ_BULLET_SPEED, VERT_BULLET_SPEED);
-                    pos.x = player.position.x;
-                    pos.y = player.position.y;
+                    pos.x = playerOwner.position.x;
+                    pos.y = playerOwner.position.y;
+
                     break;
                 }
             case "Up":
@@ -120,18 +118,18 @@ public class bullet : Photon.MonoBehaviour
                 {
 			        thisBullet.rotation = 90;
                     speed = new Vector2(0.0f, VERT_BULLET_SPEED);
-                    pos.x = player.position.x;
-                    pos.y = player.position.y;
+                    pos.x = playerOwner.position.x;
+                    pos.y = playerOwner.position.y;
                     break;
                 }
             case "RightUp":
 			case "RightUpStatic":
                 {
 
-			        thisBullet.rotation = 45;
+			        thisBullet.rotation = 30.6f;
                     speed = new Vector2(HORZ_BULLET_SPEED, VERT_BULLET_SPEED);
-                    pos.x = player.position.x;
-                    pos.y = player.position.y;
+                    pos.x = playerOwner.position.x;
+                    pos.y = playerOwner.position.y;
                     break;
                 }
             case "Right":
@@ -139,17 +137,17 @@ public class bullet : Photon.MonoBehaviour
                 {
                     thisBullet.rotation = 0;
                     speed = new Vector2(HORZ_BULLET_SPEED, 0.0f);
-                    pos.x = player.position.x;
-                    pos.y = player.position.y;
+                    pos.x = playerOwner.position.x;
+                    pos.y = playerOwner.position.y;
                     break;
                 }
             case "RightDown":
 			case "RightDownStatic":
                 {
-                    thisBullet.rotation = 315;
+                    thisBullet.rotation = 329.4f;
                     speed = new Vector2(HORZ_BULLET_SPEED, -1 * VERT_BULLET_SPEED);
-                    pos.x = player.position.x;
-                    pos.y = player.position.y;
+                    pos.x = playerOwner.position.x;
+                    pos.y = playerOwner.position.y;
                     break;
                 }
         }

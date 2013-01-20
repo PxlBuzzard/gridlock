@@ -1,32 +1,69 @@
 using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// A timer written for Unity.
+/// </summary>
+/// <author>
+/// Daniel Jost
+/// </author>
 public class Timer {
 	
 	private float currentTime;
-	public bool isFinished;
+	public bool isFinished = false;
+	public bool isRunning = false;
 
-	// Use this for initialization
+	/// <summary>
+	/// Start this instance.
+	/// </summary>
 	public void Start () 
 	{
-		isFinished = false;
+
 	}
 	
-	public void Countdown(float countdownTime)
+	/// <summary>
+	/// Reset the timer.
+	/// </summary>
+	public void Reset ()
+	{
+		isFinished = false;
+		isRunning = false;
+	}
+	
+	/// <summary>
+	/// Countdown timer.
+	/// </summary>
+	/// <param name='countdownTime'>
+	/// Time to countdown from.
+	/// </param>
+	public void Countdown (float countdownTime)
 	{
 		currentTime = countdownTime;
 		isFinished = false;
+		isRunning = true;
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Update the timer.
+	/// </summary>
+	/// <returns>
+	/// If the timer is finished (true).
+	/// </returns>
 	public bool Update () 
 	{
-		currentTime -= Time.deltaTime;
-		
-		if (currentTime <= 0)
+		if(isRunning)
 		{
-			return isFinished = true;
+			currentTime -= Time.deltaTime;
+			
+			if (currentTime <= 0)
+			{
+				isRunning = false;
+				isFinished = true;
+				return isFinished;
+			}
+			return false;
 		}
-		return false;
+		
+		return isFinished;
 	}
 }

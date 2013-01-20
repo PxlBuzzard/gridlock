@@ -8,10 +8,13 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	private const float ANIMATE_THRESHOLD = 0.075f;
 	public const int MOVE_SPEED = 5;
+	public const int VERT_MOVE_SPEED = 3;
 	public string lastDirection;
 	public OTAnimatingSprite player;
 	public bulletManager theBulletManager;
 	public healthBar theHealthBar;
+	
+	private OTSound gunShot;
 	
 	public int numCoins;
 	public coinManager theCoinManager;
@@ -48,6 +51,9 @@ public class playerUpdate : Photon.MonoBehaviour {
 		theHealthBar.maxHealth = maxHealth;
 		theHealthBar.currentHealth = maxHealth;
 		theBulletManager.player = player;
+		
+		gunShot = new OTSound("gunShot");
+		gunShot.Volume(.2f);
 	}
 	
 	/// <summary>
@@ -74,12 +80,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 				
 			if (Input.GetAxis(playerNum + "Vertical") < -0.3)
 			{
-		        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * MOVE_SPEED * Time.deltaTime,0);	
+		        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);	
 				currentDirection += "Down";
 			}
 			else if (Input.GetAxis(playerNum + "Vertical") > 0.3)
 			{
-		        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * MOVE_SPEED * Time.deltaTime,0);
+		        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
 				currentDirection += "Up";
 			}
 			
@@ -157,6 +163,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		if (isFiring)
 		{
 			theBulletManager.Fire(player);
+			gunShot.Play(true);
 		}
 		
 		if (isDead)
@@ -164,8 +171,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 			player.alpha -= .005f;
 			theHealthBar.barOpacity(.005f, true);
 		}
-		
-		DeductHealth(1);
 	}
 	
 	/// <summary>

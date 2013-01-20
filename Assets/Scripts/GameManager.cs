@@ -13,6 +13,7 @@ public class GameManager : Photon.MonoBehaviour {
 	private float xDist;
 	private float yDist;
 	private bool p2exists = false;
+	private string mute = "Mute";
 	
 	private enum GameState { Paused, InGame };
 	
@@ -37,6 +38,19 @@ public class GameManager : Photon.MonoBehaviour {
 	{
 		if (PhotonNetwork.room == null || gameState == GameState.Paused)
 		{
+			if (GUILayout.Button(mute))
+			{
+				if (!AudioListener.pause)
+				{
+					AudioListener.pause = true;
+					mute = "Unmute";
+				} else {
+					AudioListener.pause = false;
+					mute = "Mute";
+				}
+				
+			}
+			
 			GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 300));
 			if (GUILayout.Button("Click here to fill out the alpha feedback form :)"))
 				Application.OpenURL("https://docs.google.com/spreadsheet/viewform?formkey=dEVJY2NzYll4dC1OSWhFMklRcHY3TGc6MA");

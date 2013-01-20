@@ -3,6 +3,9 @@ using System.Collections;
 
 public class bullet : Photon.MonoBehaviour
 {
+	
+	private const float HORZ_BULLET_SPEED = 1.0f;
+	private const float VERT_BULLET_SPEED = 0.59375f;
 	private const float DELETION_TIME = .5f;
 	private Vector2 speed;
 	private float speedMod = 30f;
@@ -80,7 +83,7 @@ public class bullet : Photon.MonoBehaviour
 			case "DownStatic":
                 {
 				    thisBullet.rotation = 270;
-                    speed = new Vector2(0.0f, -1.0f);
+                    speed = new Vector2(0.0f, -1 * VERT_BULLET_SPEED);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
                     break;
@@ -89,7 +92,7 @@ public class bullet : Photon.MonoBehaviour
 			case "LeftDownStatic":
                 {
 			        thisBullet.rotation = 235;
-                    speed = new Vector2(-1.0f, -1.0f);
+                    speed = new Vector2(-1 * HORZ_BULLET_SPEED, -1 * VERT_BULLET_SPEED);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
                     break;
@@ -98,7 +101,7 @@ public class bullet : Photon.MonoBehaviour
 			case "LeftStatic":
                 {
                     thisBullet.rotation = 180;
-                    speed = new Vector2(-1.0f, 0.0f);
+                    speed = new Vector2(-1 * HORZ_BULLET_SPEED, 0.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
                     break;
@@ -107,7 +110,7 @@ public class bullet : Photon.MonoBehaviour
 			case "LeftUpStatic":
                 {
 					thisBullet.rotation = 135;
-                    speed = new Vector2(-1.0f, 1.0f);
+                    speed = new Vector2(-1 * HORZ_BULLET_SPEED, VERT_BULLET_SPEED);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
                     break;
@@ -116,7 +119,7 @@ public class bullet : Photon.MonoBehaviour
 			case "UpStatic":
                 {
 			        thisBullet.rotation = 90;
-                    speed = new Vector2(0.0f, 1.0f);
+                    speed = new Vector2(0.0f, VERT_BULLET_SPEED);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
                     break;
@@ -126,7 +129,7 @@ public class bullet : Photon.MonoBehaviour
                 {
 
 			        thisBullet.rotation = 45;
-                    speed = new Vector2(1f, 1f);
+                    speed = new Vector2(HORZ_BULLET_SPEED, VERT_BULLET_SPEED);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
                     break;
@@ -135,7 +138,7 @@ public class bullet : Photon.MonoBehaviour
 			case "RightStatic":
                 {
                     thisBullet.rotation = 0;
-                    speed = new Vector2(1.0f, 0.0f);
+                    speed = new Vector2(HORZ_BULLET_SPEED, 0.0f);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
                     break;
@@ -144,7 +147,7 @@ public class bullet : Photon.MonoBehaviour
 			case "RightDownStatic":
                 {
                     thisBullet.rotation = 315;
-                    speed = new Vector2(1.0f, -1.0f);
+                    speed = new Vector2(HORZ_BULLET_SPEED, -1 * VERT_BULLET_SPEED);
                     pos.x = player.position.x;
                     pos.y = player.position.y;
                     break;

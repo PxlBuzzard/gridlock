@@ -131,11 +131,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 			
 			//fire bullets
 			isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"));
-			
-			//update bullets
-			theBulletManager.Update();
-			
-		//	OT.view.position = new Vector2(player.position.x, player.position.y);
 		}
 		else if (!photonView.isMine)
 		{
@@ -156,7 +151,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		
 		if (isFiring)
 		{
-			theBulletManager.Fire(player);
+			theBulletManager.Fire();
 		}
 		
 		if (isDead)
@@ -164,8 +159,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 			player.alpha -= .005f;
 			theHealthBar.barOpacity(.005f, true);
 		}
-		
-		DeductHealth(1);
 	}
 	
 	/// <summary>
@@ -223,7 +216,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		if (!isDead)
 		{
 			StopCoroutine("HealthFlash");
-			StartCoroutine(HealthFlash());
+			StartCoroutine("HealthFlash");
 		}
 	}
 	

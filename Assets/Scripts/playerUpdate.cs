@@ -8,7 +8,9 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	private const float ANIMATE_THRESHOLD = 0.075f;
 	public const int MOVE_SPEED = 5;
+	public const int DASH_SPEED = 20;
 	public string lastDirection;
+	public string dashDirection;
 	public OTAnimatingSprite player;
 	public bulletManager theBulletManager;
 	public healthBar theHealthBar;
@@ -23,6 +25,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	private bool isFiring;
 	private bool isDead;
+	private Timer dashTimer = new Timer();
+	private Timer dashCooldownTimer = new Timer();
 	
 	public string playerNum;
 	
@@ -60,27 +64,35 @@ public class playerUpdate : Photon.MonoBehaviour {
 		   	string currentDirection = "";
 			string currentAimingDirection = "";
 			
-			//move player
-			if (Input.GetAxis(playerNum + "Horizontal") < -0.3)
+			if(!dashCooldownTimer.isRunning && !dashTimer.isRunning && Input.GetKey(KeyCode.E))
 			{
-		        transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);	
-				currentDirection += "Left";
+				dashDirection = lastDirection;
+				dashTimer.Countdown(.2f);
 			}
-			else if (Input.GetAxis(playerNum + "Horizontal") > 0.3)
+			dashTimer.Update();
+			if(dashTimer.isFinished)
 			{
-		        transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
-				currentDirection += "Right";
+				dashTimer.Reset();
+				dashCooldownTimer.Countdown(3f);	
 			}
+			dashCooldownTimer.Update();
+			if(dashCooldownTimer.isFinished)
+			{
+				print ("cooldown finished");
+				dashCooldownTimer.Reset();	
 				
-			if (Input.GetAxis(playerNum + "Vertical") < -0.3)
-			{
-		        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * MOVE_SPEED * Time.deltaTime,0);	
-				currentDirection += "Down";
+				print (dashCooldownTimer.isRunning);
+				print (dashTimer.isRunning);
 			}
-			else if (Input.GetAxis(playerNum + "Vertical") > 0.3)
+			
+			// Player moving
+			if(dashTimer.isRunning)
 			{
-		        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * MOVE_SPEED * Time.deltaTime,0);
-				currentDirection += "Up";
+				dashPlayer();
+			}
+			else
+			{
+				currentDirection = movePlayer(currentDirection);
 			}
 			
 			// Player aiming
@@ -102,12 +114,11 @@ public class playerUpdate : Photon.MonoBehaviour {
 				currentAimingDirection += "Up";
 			}
 			
-			if(currentDirection == "")
+			if(currentDirection == "" && !dashTimer.isRunning)
 			{
 				if (currentAimingDirection == "")
 				{
 					player.PlayLoop(lastDirection + "Static");
-					
 				}
 				else
 				{
@@ -117,12 +128,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 			}
 			else if (!isDead)
 			{
-				if (currentAimingDirection == "")
+				if (currentAimingDirection == "" && !dashTimer.isRunning)
 				{
 					player.PlayLoop(currentDirection);
 					lastDirection = currentDirection;
 				}
-				else
+				else if(!(currentAimingDirection == ""))
 				{
 					player.PlayLoop(currentAimingDirection);
 					lastDirection = currentAimingDirection;
@@ -131,6 +142,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 			
 			//fire bullets
 			isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"));
+			if(!dashTimer.isRunning)
+			{
+				isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"));
+			}
+			else
+			{
+				isFiring = false;	
+			}
 		}
 		else if (!photonView.isMine)
 		{
@@ -158,6 +177,57 @@ public class playerUpdate : Photon.MonoBehaviour {
 		{
 			player.alpha -= .005f;
 			theHealthBar.barOpacity(.005f, true);
+		}
+	}
+	
+	string movePlayer(string currentDirection)
+	{
+		//move player
+		if (Input.GetAxis(playerNum + "Horizontal") < -0.3)
+		{
+	        transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);	
+			currentDirection += "Left";
+		}
+		else if (Input.GetAxis(playerNum + "Horizontal") > 0.3)
+		{
+	        transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
+			currentDirection += "Right";
+		}
+			
+		if (Input.GetAxis(playerNum + "Vertical") < -0.3)
+		{
+	        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * MOVE_SPEED * Time.deltaTime,0);	
+			currentDirection += "Down";
+		}
+		else if (Input.GetAxis(playerNum + "Vertical") > 0.3)
+		{
+	        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * MOVE_SPEED * Time.deltaTime,0);
+			currentDirection += "Up";
+		}
+		
+		return currentDirection;
+	}
+	
+	void dashPlayer()
+	{
+		if(dashDirection.Contains("Left"))
+		{
+			transform.Translate(DASH_SPEED * Time.deltaTime * -1,0,0);	
+		}
+		
+		if(dashDirection.Contains("Right"))
+		{
+			transform.Translate(DASH_SPEED * Time.deltaTime,0,0);	
+		}
+		
+		if(dashDirection.Contains("Up"))
+		{
+			transform.Translate(0,DASH_SPEED * Time.deltaTime,0);	
+		}
+		
+		if(dashDirection.Contains("Down"))
+		{
+			transform.Translate(0,DASH_SPEED * Time.deltaTime * -1,0);	
 		}
 	}
 	

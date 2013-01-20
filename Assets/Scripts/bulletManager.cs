@@ -38,8 +38,8 @@ public class bulletManager : Photon.MonoBehaviour
 			if (activeBullets[i].GetComponent<bullet>().isDead)
 			{
 				activeBullets[i].collidable = false;
-				activeBullets[i].position = Vector3.zero;
 				activeBullets[i].visible = false;
+				activeBullets[i].position = Vector3.zero;
 				inactiveBullets.Enqueue(activeBullets[i]);
 				activeBullets.Remove(activeBullets[i]);
 				i--;
@@ -52,7 +52,7 @@ public class bulletManager : Photon.MonoBehaviour
 	/// </summary>
 	public void Fire ()
 	{
-		if(inactiveBullets.Count > 0)
+		if (inactiveBullets.Count > 0)
 		{
 			OTSprite aBullet = inactiveBullets.Dequeue();
 			activeBullets.Add(aBullet);

@@ -22,7 +22,7 @@ public class GameManager : Photon.MonoBehaviour {
 	public Texture2D pressStart;
 	public Texture2D controllerHelp;
 	
-	private enum GameState { Startup, MainMenu, Loading, Paused, InGame };
+	private enum GameState { Startup, MainMenu, Loading, Paused, InGame, Leaderboard };
 	
 	private GameState gameState = GameState.Startup;
 	#endregion
@@ -144,7 +144,7 @@ public class GameManager : Photon.MonoBehaviour {
 						companyStyle.normal.textColor = Color.white;
 						companyStyle.fontSize = 20;
 						GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 100) / 2, 400, 100));
-							GUILayout.Label("Player count: " + PhotonNetwork.countOfPlayersInRooms, companyStyle);
+							GUILayout.Label("Player count: " + (PhotonNetwork.countOfPlayersInRooms - 1), companyStyle);
 						GUILayout.EndArea();
 				
 						//loading text
@@ -165,17 +165,26 @@ public class GameManager : Photon.MonoBehaviour {
 			
 			case GameState.Paused:
 				{
-					if (GUILayout.Button(mute))
-					{
-						if (!AudioListener.pause)
+					//if (Input.GetAxis(playerNum + "Dash") > 0.5)
+					GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 300));
+						if (GUILayout.Button(mute))
 						{
-							AudioListener.pause = true;
-							mute = "Unmute";
-						} else {
-							AudioListener.pause = false;
-							mute = "Mute";
+							if (!AudioListener.pause)
+							{
+								AudioListener.pause = true;
+								mute = "Unmute";
+							} else {
+								AudioListener.pause = false;
+								mute = "Mute";
+							}
 						}
-					}
+					GUILayout.EndArea();
+					break;
+				}
+			
+			case GameState.Leaderboard:
+				{
+					
 					break;
 				}
 		}

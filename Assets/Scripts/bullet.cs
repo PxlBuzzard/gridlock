@@ -49,7 +49,11 @@ public class bullet : Photon.MonoBehaviour
 	/// </param>
 	public void OnCollision(OTObject bullet)
 	{
-		if ((bullet.collisionObject.name == "PlayerPrefab(Clone)" || bullet.collisionObject.name == "player-1") && thisBullet.collidable == true)
+		if ((bullet.collisionObject.name == "PlayerOnePrefab(Clone)" || 
+			bullet.collisionObject.name == "PlayerTwoPrefab(Clone)" || 
+			bullet.collisionObject.name == "player-1" || 
+			bullet.collisionObject.name == "player-2") && 
+			thisBullet.collidable == true)
 		{	
 			if (playerOwner != bullet.collisionObject)
 			{

@@ -1,9 +1,12 @@
 using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// A generic bullet.
+/// </summary>
 public class bullet : Photon.MonoBehaviour
 {
-	
+	#region Variables
 	private const float HORZ_BULLET_SPEED = 1.0f;
 	private const float VERT_BULLET_SPEED = 0.59375f;
 	private const float DELETION_TIME = .5f;
@@ -13,11 +16,12 @@ public class bullet : Photon.MonoBehaviour
 	public OTSprite playerOwner;
 	private Timer timeToDelete;
 	public bool isDead;
+	#endregion
 	
 	/// <summary>
 	/// Start this instance.
 	/// </summary>
-	public void Start() 
+	public void Start () 
 	{
 		timeToDelete = new Timer();
 		isDead = true;
@@ -27,12 +31,10 @@ public class bullet : Photon.MonoBehaviour
 	/// <summary>
 	/// Update this instance.
 	/// </summary>
-	public void Update()
+	void Update ()
 	{
 		if(!isDead)
 		{
-			thisBullet.position += speed * Time.deltaTime;
-			
 			//kill the bullet if it has been alive long enough
 			if (timeToDelete.Update())
 			{
@@ -42,12 +44,20 @@ public class bullet : Photon.MonoBehaviour
 	}
 	
 	/// <summary>
+	/// Updates on a fixed interval.
+	/// </summary>
+	void FixedUpdate ()
+	{
+		thisBullet.position += speed * Time.deltaTime;	
+	}
+	
+	/// <summary>
 	/// Fires when bullet collides with another object.
 	/// </summary>
 	/// <param name='owner'>
 	/// The bullet.
 	/// </param>
-	public void OnCollision(OTObject bullet)
+	public void OnCollision (OTObject bullet)
 	{
 		if ((bullet.collisionObject.name == "PlayerOnePrefab(Clone)" || 
 			bullet.collisionObject.name == "PlayerTwoPrefab(Clone)" || 
@@ -68,7 +78,7 @@ public class bullet : Photon.MonoBehaviour
 	/// <summary>
 	/// Fires a bullet.
 	/// </summary>
-	public void Fire()  
+	public void Fire ()  
 	{
 		speed = Vector2.zero;
 		Vector2 pos = thisBullet.position;

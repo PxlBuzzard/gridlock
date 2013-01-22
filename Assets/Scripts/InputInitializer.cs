@@ -15,7 +15,6 @@ public class InputInitializer: MonoBehaviour {
 				onSuccess = (OuyaSDK.InputButtonEvent inputEvent) =>
 				{
 					OuyaInputManager.HandleButtonEvent(inputEvent);
-					print("INITIALIZED BUTTON EVENTS");
 				},
 				
 				onFailure = (int ErrorCode, string errorMessage) =>
@@ -30,7 +29,6 @@ public class InputInitializer: MonoBehaviour {
 				onSuccess = (OuyaSDK.InputAxisEvent inputEvent) =>
 				{
 					OuyaInputManager.HandleAxisEvent(inputEvent);
-					print("AXIS INITIALIZE SUCCEDED");
 				},
 				
 				onFailure = (int ErrorCode, string errorMessage) =>

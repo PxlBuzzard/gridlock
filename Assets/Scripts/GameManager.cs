@@ -22,6 +22,9 @@ public class GameManager : Photon.MonoBehaviour {
 	public Texture2D pressStart;
 	public Texture2D controllerHelp;
 	
+	public OTAnimatingSprite player;
+	public OTTileMap map;
+	
 	private enum GameState { Startup, MainMenu, Loading, Paused, InGame, Leaderboard };
 	
 	private GameState gameState = GameState.Startup;
@@ -253,17 +256,18 @@ public class GameManager : Photon.MonoBehaviour {
 	
 	// Photon Callback
 	void OnJoinedRoom()
-	{
-		PhotonNetwork.Instantiate("PlayerOnePrefab", spawnPoint, Quaternion.identity, 0);
-		Instantiate(Resources.Load("MapPrefab"), Vector3.zero, Quaternion.identity);
-		
+	{	
+		GameObject playerGameObject = PhotonNetwork.Instantiate("PlayerOnePrefab", spawnPoint, Quaternion.identity, 0);
+		player = playerGameObject.GetComponent<OTAnimatingSprite>();
+		map = (Instantiate(Resources.Load("MapPrefab")) as GameObject).GetComponent<OTTileMap>();
+		player.GetComponent<playerUpdate>().map = map;
 	}
 	
 	//TODO: Remove stuff if you leave a room
 	void OnLeftLobby()
 	{
 		//delete all the stuff
-		print ("a player left the room");
+		//print ("a player left the room");
 	}
 	
 	/// <summary>

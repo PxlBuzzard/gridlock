@@ -8,6 +8,7 @@ public class map : MonoBehaviour
 	public OTTileMap currentMap;
 	public Vector3 mapScale = new Vector3(128, 76, 1);
 	public List<Vector2> spawnPoints;
+	public Vector2 conversionScale;
 	public bool mapLoaded = true;
 	
 	// Use this for initialization
@@ -24,7 +25,10 @@ public class map : MonoBehaviour
 		if(mapLoaded)
 		{
 			mapLoaded = false;
+			Vector3 tempStartScale = currentMap.otTransform.localScale;
 			currentMap.otTransform.localScale = mapScale;
+			conversionScale = new Vector2(mapScale.x / tempStartScale.x, mapScale.y / tempStartScale.y);
+			print (conversionScale.x);
 			currentMap.depth = 1;
 		}
 	}

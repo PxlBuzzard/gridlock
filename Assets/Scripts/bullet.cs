@@ -35,11 +35,8 @@ public class bullet : Photon.MonoBehaviour
 	{
 		if(!isDead)
 		{
-			//kill the bullet if it has been alive long enough
-			if (timeToDelete.Update())
-			{
-				isDead = true;
-			}
+			thisBullet.collidable = true;
+			isDead = timeToDelete.Update();
 		}
 	}
 	
@@ -48,7 +45,8 @@ public class bullet : Photon.MonoBehaviour
 	/// </summary>
 	void FixedUpdate ()
 	{
-		thisBullet.position += speed * Time.deltaTime;	
+		if(!isDead)
+			thisBullet.position += speed * Time.deltaTime;	
 	}
 	
 	/// <summary>
@@ -59,11 +57,9 @@ public class bullet : Photon.MonoBehaviour
 	/// </param>
 	public void OnCollision (OTObject bullet)
 	{
-		if ((bullet.collisionObject.name == "PlayerOnePrefab(Clone)" || 
-			bullet.collisionObject.name == "PlayerTwoPrefab(Clone)" || 
-			bullet.collisionObject.name == "player-1" || 
-			bullet.collisionObject.name == "player-2") && 
-			thisBullet.collidable == true)
+		//print (bullet.collisionObject.name);
+		if (bullet.collisionObject.GetComponent("playerUpdate") as playerUpdate != null && 
+			thisBullet.collidable)
 		{	
 			if (playerOwner != bullet.collisionObject)
 			{

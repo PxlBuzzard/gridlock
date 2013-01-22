@@ -315,10 +315,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 		{
 			currentHealth -= damage;
 			
-			//kill the player if he drops below 0 HP
-			if(currentHealth <= 0)
-				StartCoroutine(KillPlayer());
-			
 			theHealthBar.AdjustCurrentHealth(currentHealth);
 		}
 		
@@ -326,6 +322,10 @@ public class playerUpdate : Photon.MonoBehaviour {
 		{
 			StopCoroutine("HealthFlash");
 			StartCoroutine("HealthFlash");
+			
+			//kill the player if he drops below 0 HP
+			if(currentHealth <= 0)
+				StartCoroutine(KillPlayer());
 		}
 	}
 	

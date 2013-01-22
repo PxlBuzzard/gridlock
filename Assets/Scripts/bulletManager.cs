@@ -21,10 +21,10 @@ public class bulletManager : Photon.MonoBehaviour
 		for (int i = 0; i < NUM_BULLETS; i++) 
 		{
 			OTSprite aBullet = (OTSprite)Instantiate(BulletPrefab);
-			aBullet.collidable = false;
-			aBullet.visible = false;
 			aBullet.GetComponent<bullet>().playerOwner = player;
+			aBullet.visible = false;
 			inactiveBullets.Enqueue(aBullet);
+			aBullet.otCollider = new BoxCollider();
 		}
 	}
 	

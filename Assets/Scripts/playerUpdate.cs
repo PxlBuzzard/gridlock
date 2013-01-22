@@ -207,6 +207,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 		}
 	}
 	
+	/// <summary>
+	/// Put the camera code in here.
+	/// </summary>
+	void LateUpdate ()
+	{
+		
+	}
+	
 	string movePlayer(string currentDirection)
 	{
 		//move player

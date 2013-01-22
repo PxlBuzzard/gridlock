@@ -3,6 +3,9 @@ using System.Collections;
 using ExitGames.Client.Photon;
 using System.Collections.Generic;
 
+/// <summary>
+/// The primary class to run code for the game.
+/// </summary>
 public class GameManager : Photon.MonoBehaviour {
 	
 	#region Variables
@@ -27,7 +30,7 @@ public class GameManager : Photon.MonoBehaviour {
 	
 	private enum GameState { Startup, MainMenu, Loading, Paused, InGame, Leaderboard };
 	
-	private GameState gameState = GameState.Startup;
+	private GameState gameState;
 	#endregion
 	
 	/// <summary>
@@ -50,6 +53,12 @@ public class GameManager : Photon.MonoBehaviour {
 		// black background
 		camera.clearFlags = CameraClearFlags.SolidColor;
 		camera.backgroundColor = Color.black;
+		
+		//skip to game if debugging in editor
+		if (Application.isEditor)
+			gameState = GameState.Loading;
+		else
+			gameState = GameState.Startup;
 	}
 	
 	/// <summary>
@@ -162,14 +171,22 @@ public class GameManager : Photon.MonoBehaviour {
 			
 			case GameState.InGame:
 				{
-					
+					//if (Input.GetAxis(playerNum + "Dash") > 0.5)
+					//gameState = GameState.Paused;
 					break;
 				}
 			
 			case GameState.Paused:
 				{
-					//if (Input.GetAxis(playerNum + "Dash") > 0.5)
 					GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 300));
+			
+						//return to game
+						if (GUILayout.Button("Return to Game"))
+						{
+							gameState = GameState.InGame;
+						}
+			
+						//mute button
 						if (GUILayout.Button(mute))
 						{
 							if (!AudioListener.pause)
@@ -180,6 +197,12 @@ public class GameManager : Photon.MonoBehaviour {
 								AudioListener.pause = false;
 								mute = "Mute";
 							}
+						}
+			
+						//quit button
+						if (GUILayout.Button("Quit"))
+						{
+							Application.Quit();
 						}
 					GUILayout.EndArea();
 					break;
@@ -192,7 +215,7 @@ public class GameManager : Photon.MonoBehaviour {
 				}
 		}
 		
-		/*
+		/* // ========= OLD MENU CODE, USED FOR REFERENCE ===========
 		if (PhotonNetwork.room == null || gameState == GameState.Paused)
 		{
 			if (GUILayout.Button(mute))

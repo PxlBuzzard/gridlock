@@ -24,6 +24,7 @@ public class GameManager : Photon.MonoBehaviour {
 	private enum GameState { Startup, MainMenu, Loading, Paused, InGame };
 	
 	private GameState gameState = GameState.Startup;
+
 	#endregion
 	
 	/// <summary>
@@ -46,6 +47,11 @@ public class GameManager : Photon.MonoBehaviour {
 		// black background
 		camera.clearFlags = CameraClearFlags.SolidColor;
 		camera.backgroundColor = Color.black;
+	}
+	
+	void Awake()
+	{
+		
 	}
 	
 	/// <summary>
@@ -109,15 +115,23 @@ public class GameManager : Photon.MonoBehaviour {
 					startColor.a = Mathf.Cos(Time.fixedTime * 4f);
 					GUI.color = startColor;
 					GUI.DrawTexture(new Rect((Screen.width - 843) / 2, (Screen.height + 500) / 2, 843, 121), pressStart);
-			
+					
+					// TAKE THIS MUTHA OUT
+					//gameState = GameState.Loading;
+					
 					//check for input to move to loading screen
 					if (Event.current.type == EventType.KeyDown)
 					{
 						gameState = GameState.Loading;
 					}
+			
+					if (OuyaInputManager.GetButtonDown("O", OuyaSDK.OuyaPlayer.player1))
+					{
+						gameState = GameState.Loading;
+					}
+			
 					break;
 				}
-			
 			case GameState.Loading:
 				{
 					if (timer.isFinished)

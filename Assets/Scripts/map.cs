@@ -28,7 +28,6 @@ public class map : MonoBehaviour
 			Vector3 tempStartScale = currentMap.otTransform.localScale;
 			currentMap.otTransform.localScale = mapScale;
 			conversionScale = new Vector2(mapScale.x / tempStartScale.x, mapScale.y / tempStartScale.y);
-			print (conversionScale.x);
 			currentMap.depth = 1;
 		}
 	}

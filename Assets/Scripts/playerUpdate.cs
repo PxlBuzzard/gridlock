@@ -13,6 +13,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public string lastDirection;
 	public string dashDirection;
 	public OTAnimatingSprite player;
+	public OTAnimatingSprite gun;
+	public OTTileMap map;
 	public bulletManager theBulletManager;
 	public healthBar theHealthBar;
 	
@@ -44,12 +46,28 @@ public class playerUpdate : Photon.MonoBehaviour {
 		numCoins = 0;
 		
 		lastDirection = "Down";
+		
+		
+		// DO NOT USE Instantiate(prefab, startPosition, QUATERNION.IDENTITY);  (Resets transform of prefabs to the initial prefab state)
+		// Working instantiation off of photon network
+		gun = (Instantiate(Resources.Load("GunPrefab")) as GameObject).GetComponent<OTAnimatingSprite>();
+		// Working instantiation on photon network
+		//GameObject gun_test = PhotonNetwork.Instantiate("GunPrefab", Vector3.zero, Quaternion.identity, 0);
+		//gun = gun_test.GetComponent<OTAnimatingSprite>();
+		
 		player.spriteContainer = OT.ContainerByName("PlayerSheet");
+		gun.spriteContainer = OT.ContainerByName("GunSheet");
 		
 		player.animation = OT.AnimationByName("PlayerAnim");
+		gun.animation = OT.AnimationByName("GunAnim");
 		
 		for (int i = 0; i < player.animation.framesets.Length; i++)
 			player.animation.framesets[i].container = player.spriteContainer;
+		for (int i = 0; i < gun.animation.framesets.Length; i++)
+			gun.animation.framesets[i].container = gun.spriteContainer;
+		
+		gun.transform.localScale = new Vector3(1.185185f, 1.185185f, 1);
+		gun.depth = -10;
 		
 		maxHealth = 300;
 		isDead = false;
@@ -83,7 +101,9 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// Update this instance.
 	/// </summary>
 	void Update() 
-	{
+	{	
+		//gun.transform.position = new Vector3(player.position.x + .1f, player.position.y - .1f, gun.transform.position.z);
+		
 		if (photonView.isMine && !isDead)
 		{
 		   	string currentDirection = "";
@@ -105,11 +125,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 			dashCooldownTimer.Update();
 			if(dashCooldownTimer.isFinished)
 			{
-				// print ("cooldown finished");
 				dashCooldownTimer.Reset();	
-				
-				print (dashCooldownTimer.isRunning);
-				print (dashTimer.isRunning);
 			}
 			
 			// Player moving
@@ -146,10 +162,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 				if (currentAimingDirection == "")
 				{
 					player.PlayLoop(lastDirection + "Static");
+					gun.PlayLoop(lastDirection + "Static");
 				}
 				else
 				{
 					player.PlayLoop(currentAimingDirection  + "Static");
+					gun.PlayLoop(currentAimingDirection  + "Static");
 					lastDirection = currentAimingDirection;
 				}
 			}
@@ -158,11 +176,13 @@ public class playerUpdate : Photon.MonoBehaviour {
 				if (currentAimingDirection == "" && !dashTimer.isRunning)
 				{
 					player.PlayLoop(currentDirection);
+					gun.PlayLoop(currentDirection);
 					lastDirection = currentDirection;
 				}
 				else if(!(currentAimingDirection == ""))
 				{
 					player.PlayLoop(currentAimingDirection);
+					gun.PlayLoop(currentAimingDirection);
 					lastDirection = currentAimingDirection;
 				}
 			}
@@ -182,11 +202,11 @@ public class playerUpdate : Photon.MonoBehaviour {
 			}
 		}
 		else if (!photonView.isMine)
-		{
-			transform.position = Vector3.Lerp(transform.position, correctPos, Time.deltaTime * 5);
+		{			
+			player.transform.position = Vector3.Lerp(player.transform.position, correctPos, Time.deltaTime * 5);
 			
 			//make the player animate till they come to a stop
-			if (Mathf.Abs(transform.position.x - correctPos.x) <= ANIMATE_THRESHOLD && Mathf.Abs(transform.position.y - correctPos.y) <= ANIMATE_THRESHOLD)
+			if (Mathf.Abs(player.transform.position.x - correctPos.x) <= ANIMATE_THRESHOLD && Mathf.Abs(player.transform.position.y - correctPos.y) <= ANIMATE_THRESHOLD)
 			{
 				player.PlayLoop(lastDirection + "Static");
 			}
@@ -209,6 +229,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 			player.alpha -= .005f;
 			theHealthBar.barOpacity(.005f, true);
 		}
+	}
+	
+	/// <summary>
+	/// Put the camera code in here.
+	/// </summary>
+	void LateUpdate ()
+	{
+		
 	}
 	
 	string movePlayer(string currentDirection)
@@ -239,23 +267,27 @@ public class playerUpdate : Photon.MonoBehaviour {
 		//move player
 		if (Input.GetAxis(playerNum + "Horizontal") < -0.3)
 		{
-	        transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);	
+	        player.transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
+			gun.transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
 			currentDirection += "Left";
 		}
 		else if (Input.GetAxis(playerNum + "Horizontal") > 0.3)
 		{
-	        transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
+	        player.transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
+			gun.transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
 			currentDirection += "Right";
 		}
 			
 		if (Input.GetAxis(playerNum + "Vertical") < -0.3)
 		{
-	        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);	
+	        player.transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
+			gun.transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
 			currentDirection += "Down";
 		}
 		else if (Input.GetAxis(playerNum + "Vertical") > 0.3)
 		{
-	        transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
+	        player.transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
+			gun.transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
 			currentDirection += "Up";
 		}
 		return currentDirection;
@@ -267,22 +299,22 @@ public class playerUpdate : Photon.MonoBehaviour {
 	{
 		if(dashDirection.Contains("Left"))
 		{
-			transform.Translate(DASH_SPEED * Time.deltaTime * -1,0,0);	
+			player.transform.Translate(DASH_SPEED * Time.deltaTime * -1,0,0);	
 		}
 		
 		if(dashDirection.Contains("Right"))
 		{
-			transform.Translate(DASH_SPEED * Time.deltaTime,0,0);	
+			player.transform.Translate(DASH_SPEED * Time.deltaTime,0,0);	
 		}
 		
 		if(dashDirection.Contains("Up"))
 		{
-			transform.Translate(0,DASH_SPEED * Time.deltaTime,0);	
+			player.transform.Translate(0,DASH_SPEED * Time.deltaTime,0);	
 		}
 		
 		if(dashDirection.Contains("Down"))
 		{
-			transform.Translate(0,DASH_SPEED * Time.deltaTime * -1,0);	
+			player.transform.Translate(0,DASH_SPEED * Time.deltaTime * -1,0);	
 		}
 	}
 	
@@ -301,7 +333,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		{
 			if (photonView.isMine)
 			{
-				stream.SendNext(transform.position);
+				stream.SendNext(player.transform.position);
 				stream.SendNext(lastDirection);
 				stream.SendNext(isFiring);
 				stream.SendNext(currentHealth);
@@ -362,7 +394,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// </summary>
 	IEnumerator KillPlayer()
 	{
-		CoinExplosion(10);
+		CoinExplosion(10);  
 		player.alpha = .5f;
 		theHealthBar.barOpacity(.5f, true);
 		isDead = true;
@@ -383,14 +415,15 @@ public class playerUpdate : Photon.MonoBehaviour {
 		player.alpha = 1;
 		isDead = false;
 		theHealthBar.AdjustCurrentHealth(maxHealth);
-		theHealthBar.barOpacity(1f, false);
+		theHealthBar.barOpacity(1f, false); 
 		player.collidable = true;
 		
 		//make player invincible for 3 seconds after spawn
 		currentHealth = maxHealth;
 		
 		//switch to respawn location
-		player.position = Vector2.zero;
+		int randomSpawnPoint = (int)(Random.value * (map.GetComponent<map>().spawnPoints.Count - 1));
+		player.position = new Vector3(map.GetComponent<map>().spawnPoints[0].x * map.GetComponent<map>().conversionScale.x, map.GetComponent<map>().spawnPoints[0].y * map.GetComponent<map>().conversionScale.y, player.depth);
 	}
 	
 	/// <summary>

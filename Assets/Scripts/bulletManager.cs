@@ -21,10 +21,10 @@ public class bulletManager : Photon.MonoBehaviour
 		for (int i = 0; i < NUM_BULLETS; i++) 
 		{
 			OTSprite aBullet = (OTSprite)Instantiate(BulletPrefab);
-			aBullet.collidable = false;
-			aBullet.visible = false;
 			aBullet.GetComponent<bullet>().playerOwner = player;
+			aBullet.visible = false;
 			inactiveBullets.Enqueue(aBullet);
+			aBullet.otCollider = new BoxCollider();
 		}
 	}
 	
@@ -38,8 +38,8 @@ public class bulletManager : Photon.MonoBehaviour
 			if (activeBullets[i].GetComponent<bullet>().isDead)
 			{
 				activeBullets[i].collidable = false;
-				activeBullets[i].position = Vector3.zero;
 				activeBullets[i].visible = false;
+				activeBullets[i].position = Vector3.zero;
 				inactiveBullets.Enqueue(activeBullets[i]);
 				activeBullets.Remove(activeBullets[i]);
 				i--;
@@ -52,7 +52,7 @@ public class bulletManager : Photon.MonoBehaviour
 	/// </summary>
 	public void Fire ()
 	{
-		if(inactiveBullets.Count > 0)
+		if (inactiveBullets.Count > 0)
 		{
 			OTSprite aBullet = inactiveBullets.Dequeue();
 			activeBullets.Add(aBullet);

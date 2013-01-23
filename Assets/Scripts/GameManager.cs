@@ -20,6 +20,8 @@ public class GameManager : Photon.MonoBehaviour {
 	private bool p2exists = false;
 	private string mute = "Mute";
 	private Timer timer = new Timer();
+	private Timer timer2 = new Timer();
+	private int timeRemaining = 10;
 	public Texture2D superCompanyLogo;
 	public Texture2D logoText;
 	public Texture2D logoPlanet;
@@ -137,7 +139,7 @@ public class GameManager : Photon.MonoBehaviour {
 					{
 						gameState = GameState.Loading;
 					}
-			#if UNITY_ANDROID
+#if UNITY_ANDROID
 					if (OuyaInputManager.GetButtonDown("O", OuyaSDK.OuyaPlayer.player1))
 					{
 						gameState = GameState.Loading;
@@ -257,9 +259,10 @@ public class GameManager : Photon.MonoBehaviour {
 					leaderboardStyle.fontSize = 50;
 					leaderboardStyle.alignment = TextAnchor.MiddleCenter;
 					leaderboardStyle.normal.textColor = Color.white;
-					GUILayout.BeginArea(new Rect((Screen.width - 800) / 2, (Screen.height + 300) / 2, 800, 300));
+					GUILayout.BeginArea(new Rect((Screen.width - 800) / 2, (Screen.height + 200) / 2, 800, 300));
 			
-					if (GameObject.Find("PlayerOnePrefab(Clone)").GetComponent<playerUpdate>().killScore >= 15)
+					if (GameObject.Find("PlayerOnePrefab(Clone)").GetComponent<playerUpdate>().killScore >= 15 ||
+						GameObject.Find("PlayerTwoPrefab(Clone)").GetComponent<playerUpdate>().killScore >= 15)
 					{
 						GUILayout.Label("You won this round!", leaderboardStyle);
 					
@@ -268,7 +271,38 @@ public class GameManager : Photon.MonoBehaviour {
 					{
 						GUILayout.Label("You lost this round.", leaderboardStyle);
 					}
+					GUILayout.Space(30);
+					GUILayout.Label("New round in: " + timeRemaining, leaderboardStyle);
 					GUILayout.EndArea();
+			
+			
+					if (timer.isFinished)
+					{
+						timeRemaining--;
+						timer.Reset();
+					}
+					else if (timer2.isFinished)
+					{
+						GameObject.Find("PlayerOnePrefab(Clone)").GetComponent<playerUpdate>().ResetRound();
+						if (p2exists)
+							GameObject.Find("PlayerTwoPrefab(Clone)").GetComponent<playerUpdate>().ResetRound();
+						timer.Reset();
+						timer2.Reset();
+						gameState = GameState.InGame;
+					}
+					else if (!timer.isRunning)
+					{
+						timer.Countdown(1f);
+					}
+					else if (!timer2.isRunning)
+					{
+						timer2.Countdown(10f);
+					}
+					else
+					{
+						timer.Update();
+						timer2.Update();
+					}
 					break;
 				}
 		}
@@ -359,7 +393,11 @@ public class GameManager : Photon.MonoBehaviour {
 	void Update()
 	{
 		//check for input from a second player
-		if (Input.GetButtonDown("P2join") && !p2exists)
+		if (Input.GetButtonDown("P2join") && !p2exists && gameState == GameState.InGame
+#if UNITY_ANDROID
+			|| OuyaInputManager.GetButtonDown("O", OuyaSDK.OuyaPlayer.player2) 
+#endif
+			)
 		{
 			PhotonNetwork.Instantiate("PlayerTwoPrefab", spawnPoint, Quaternion.identity, 0);
 			p2exists = true;

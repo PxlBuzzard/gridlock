@@ -10,6 +10,7 @@ public class GameManager : Photon.MonoBehaviour {
 	
 	#region Variables
 	private const int MAX_PLAYERS_IN_ROOM = 20;
+	public const int KILLS_TO_WIN = 15;
 	private string roomName;
 	private Vector3 spawnPoint = new Vector3(0,0,0);
 	private Vector2 cameraPosition = Vector2.zero;
@@ -28,9 +29,9 @@ public class GameManager : Photon.MonoBehaviour {
 	public OTAnimatingSprite player;
 	public OTTileMap map;
 
-	private enum GameState { Startup, MainMenu, Loading, Paused, InGame, Leaderboard };
+	public enum GameState { Startup, MainMenu, Loading, Paused, InGame, Leaderboard };
 	
-	private GameState gameState;
+	public GameState gameState;
 	#endregion
 	
 	/// <summary>
@@ -170,7 +171,7 @@ public class GameManager : Photon.MonoBehaviour {
 						companyStyle.normal.textColor = Color.white;
 						companyStyle.fontSize = 20;
 						GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 100) / 2, 400, 100));
-							GUILayout.Label("Player count: " + (PhotonNetwork.countOfPlayersInRooms - 1), companyStyle);
+							GUILayout.Label("Player count: " + (Mathf.Clamp(PhotonNetwork.countOfPlayersInRooms - 1, 0, 20)), companyStyle);
 						GUILayout.EndArea();
 				
 						//loading text
@@ -178,6 +179,7 @@ public class GameManager : Photon.MonoBehaviour {
 						GUILayout.BeginArea(new Rect((Screen.width - 600) / 2, (Screen.height + 500) / 2, 600, 200));
 							GUILayout.Label("Connecting to server...", companyStyle);
 						GUILayout.EndArea();
+				
 						timer.Update();
 					}
 					break;
@@ -185,8 +187,22 @@ public class GameManager : Photon.MonoBehaviour {
 			
 			case GameState.InGame:
 				{
-					//if (Input.GetAxis(playerNum + "Dash") > 0.5)
-					//gameState = GameState.Paused;
+					//gamemode info
+					GUIStyle killStyle = new GUIStyle();
+					killStyle.fontSize = 32;
+					killStyle.alignment = TextAnchor.MiddleCenter;
+					killStyle.normal.textColor = Color.white;
+					GUILayout.BeginArea(new Rect((Screen.width - 600) / 2, 10, 600, 200));
+						GUILayout.Label("Free-For-All", killStyle);
+						GUILayout.Space(20);
+						GUILayout.Label("Kills to win: " + KILLS_TO_WIN, killStyle);
+					GUILayout.EndArea();
+					
+					//check pause button
+					if (Input.GetButtonDown("Pause"))
+					{
+						gameState = GameState.Paused;
+					}
 					break;
 				}
 			
@@ -219,12 +235,34 @@ public class GameManager : Photon.MonoBehaviour {
 							Application.Quit();
 						}
 					GUILayout.EndArea();
+			
+					//check pause button
+					if (Input.GetButtonDown("Pause"))
+					{
+						gameState = GameState.InGame;
+					}
 					break;
 				}
 			
 			case GameState.Leaderboard:
 				{
+					//win or lose text
+					GUIStyle leaderboardStyle = new GUIStyle();
+					leaderboardStyle.fontSize = 50;
+					leaderboardStyle.alignment = TextAnchor.MiddleCenter;
+					leaderboardStyle.normal.textColor = Color.white;
+					GUILayout.BeginArea(new Rect((Screen.width - 800) / 2, (Screen.height + 300) / 2, 800, 300));
+			
+					if (GameObject.Find("PlayerOnePrefab(Clone)").GetComponent<playerUpdate>().killScore >= 15)
+					{
+						GUILayout.Label("You won this round!", leaderboardStyle);
 					
+					}
+					else
+					{
+						GUILayout.Label("You lost this round.", leaderboardStyle);
+					}
+					GUILayout.EndArea();
 					break;
 				}
 		}
@@ -291,7 +329,9 @@ public class GameManager : Photon.MonoBehaviour {
 		*/
 	}
 	
-	// Photon Callback
+	/// <summary>
+	/// Called when the local player joins a room.
+	/// </summary>
 	void OnJoinedRoom()
 	{	
 		GameObject playerGameObject = PhotonNetwork.Instantiate("PlayerOnePrefab", spawnPoint, Quaternion.identity, 0);
@@ -312,19 +352,11 @@ public class GameManager : Photon.MonoBehaviour {
 	/// </summary>
 	void Update()
 	{
+		//check for input from a second player
 		if (Input.GetButtonDown("P2join") && !p2exists)
 		{
 			PhotonNetwork.Instantiate("PlayerTwoPrefab", spawnPoint, Quaternion.identity, 0);
 			p2exists = true;
-		}
-		
-		if (Input.GetButtonDown("Pause") && gameState == GameState.InGame)
-		{
-			gameState = GameState.Paused;
-		}
-		else if (gameState == GameState.Paused && Input.GetButtonDown("Pause"))
-		{
-			gameState = GameState.InGame;
 		}
 		
 		if (GameObject.Find("PlayerTwoPrefab(Clone)") != null)
@@ -349,6 +381,8 @@ public class GameManager : Photon.MonoBehaviour {
 		} else if (GameObject.Find("PlayerOnePrefab(Clone)") != null){
 			cameraPosition = new Vector2(GameObject.Find("PlayerOnePrefab(Clone)").transform.position.x, GameObject.Find("PlayerOnePrefab(Clone)").transform.position.y);
 		}
+		
+		//update camera position and zoom
 		OT.view.position = cameraPosition;
 		OT.view.zoom = cameraZoom;
 	}

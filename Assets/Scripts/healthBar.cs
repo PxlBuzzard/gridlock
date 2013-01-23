@@ -14,6 +14,9 @@ public class healthBar : MonoBehaviour {
     private float maxHealthBarLength;
     private GUIStyle maxStyle;
     private GUIStyle currentStyle;
+	private GUIStyle killStyle;
+	public OTAnimatingSprite parent;
+	public bool showKills;
 	
 	/// <summary>
 	/// Start this instance.
@@ -25,6 +28,7 @@ public class healthBar : MonoBehaviour {
 		healthBarLength = maxHealthBarLength;
         maxStyle = new GUIStyle();
         currentStyle = new GUIStyle();
+		killStyle = new GUIStyle();
        
         //create color fill
         Texture2D tex = new Texture2D(1, 1);
@@ -41,6 +45,14 @@ public class healthBar : MonoBehaviour {
         tex2.SetPixel(0, 0, Color.green);
         tex2.Apply();
         currentStyle.normal.background = tex2;
+		
+		//style the kill counter
+		killStyle.fontSize = 24;
+		killStyle.alignment = TextAnchor.MiddleCenter;
+		killStyle.normal.textColor = Color.white;
+		
+		//show kill count above the health bar if attached to a player
+		showKills = (parent.GetComponent<playerUpdate>());
     }
     
     /// <summary>
@@ -49,12 +61,18 @@ public class healthBar : MonoBehaviour {
     void OnGUI ()
     {
         //position of the health bar onscreen
-    	screenPosition = Camera.main.WorldToScreenPoint(transform.position);
+    	screenPosition = Camera.main.WorldToScreenPoint(parent.transform.position);
     	screenPosition.y = Screen.height - screenPosition.y;
-        
+		
 		//draw the health boxes
         GUI.Box(new Rect(screenPosition.x - (maxHealthBarLength / 2), screenPosition.y - 40, maxHealthBarLength, BAR_HEIGHT), "", maxStyle);
         GUI.Box(new Rect(screenPosition.x - (maxHealthBarLength / 2), screenPosition.y - 40, healthBarLength, BAR_HEIGHT), "", currentStyle);
+		
+		//draw kill count
+		if (showKills)
+		{
+			GUI.Box(new Rect(screenPosition.x - 100, screenPosition.y - 80, 200, 50), "Kills: " + parent.GetComponent<playerUpdate>().killScore, killStyle);
+		}
 	}
     
 	/// <summary>

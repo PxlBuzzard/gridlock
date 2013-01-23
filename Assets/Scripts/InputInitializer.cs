@@ -20,7 +20,6 @@ public class InputInitializer: MonoBehaviour {
 				onFailure = (int ErrorCode, string errorMessage) =>
 				{
 					// failure code
-					print("FAILED BUTTON INITIALIZE");
 				}
 			});
 			
@@ -34,12 +33,11 @@ public class InputInitializer: MonoBehaviour {
 				onFailure = (int ErrorCode, string errorMessage) =>
 				{
 					// failure code
-					print("FAILURE ON BUTTON INITIALIZE");
 				}
 			});
 		} catch (System.Exception ex) {
 			// failure...
-			print("Failure..............");
+			print("Failure.............." + ex.Message);
 		}
 	}	
 	

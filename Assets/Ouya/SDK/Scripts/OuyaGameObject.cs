@@ -1002,8 +1002,8 @@ public class OuyaGameObject : MonoBehaviour
         GameObject goNGUI = GameObject.Find("_NGUIHandler");
         if (goNGUI != null)
         {
-            OuyaNGUIHandler nguiHandler = goNGUI.GetComponent<OuyaNGUIHandler>();
-            nguiHandler.rawOut.text = m_inputData;
+//            OuyaNGUIHandler nguiHandler = goNGUI.GetComponent<OuyaNGUIHandler>();
+  //          nguiHandler.rawOut.text = m_inputData;
         }
         else
         {

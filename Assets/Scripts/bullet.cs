@@ -66,9 +66,9 @@ public class bullet : Photon.MonoBehaviour
 				isDead = true;
 				
 				//switch to damage on gun
-				if(bullet.collisionObject.GetComponent<playerUpdate>().DeductHealth(3))
+				if (bullet.collisionObject.GetComponent<playerUpdate>().DeductHealth(3))
 				{
-					playerOwner.GetComponent<playerUpdate>().killScore++;	
+					playerOwner.GetComponent<playerUpdate>().GainKill();	
 				}
 			}
 		}

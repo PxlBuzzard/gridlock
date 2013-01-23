@@ -16,7 +16,7 @@ public class map : MonoBehaviour
 	/// </summary>
 	void Start () 
 	{
-		LoadMap ("Map_roads");
+		LoadMap ("Final_Map");
 	}
 	
 	/// <summary>

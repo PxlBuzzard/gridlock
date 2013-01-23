@@ -269,49 +269,49 @@ public class playerUpdate : Photon.MonoBehaviour {
 	{
 #if UNITY_ANDROID
 		// Move player ouya
-		if (OuyaInputManager.GetAxis("LX", localPlayerNumber) < -0.3)
+		if (OuyaInputManager.GetAxis("LX", localPlayerNumber) < -0.3 && player.position.x > -1 * map.GetComponent<map>().mapScale.x / 2 + 1.25)
 		{
 	        transform.Translate(OuyaInputManager.GetAxis("LX", localPlayerNumber) * MOVE_SPEED * Time.deltaTime,0,0);	
 			currentDirection += "Left";
 		}
-		else if (OuyaInputManager.GetAxis("LX", localPlayerNumber) > 0.3)
+		else if (OuyaInputManager.GetAxis("LX", localPlayerNumber) > 0.3 && player.position.x < map.GetComponent<map>().mapScale.x - map.GetComponent<map>().mapScale.x / 2)
 		{
 	        transform.Translate(OuyaInputManager.GetAxis("LX", localPlayerNumber) * MOVE_SPEED * Time.deltaTime,0,0);
 			currentDirection += "Right";
 		}
 			
-		if (OuyaInputManager.GetAxis("LY", localPlayerNumber) < -0.3)
+		if (OuyaInputManager.GetAxis("LY", localPlayerNumber) < -0.3 && player.position.y > -1 * map.GetComponent<map>().mapScale.y / 2 + .5)
 		{
 	        transform.Translate(0,OuyaInputManager.GetAxis("LY", localPlayerNumber) * -1 * VERT_MOVE_SPEED * Time.deltaTime,0);	
 			currentDirection += "Up";
 		}
-		else if (OuyaInputManager.GetAxis("LY", localPlayerNumber) > 0.3)
+		else if (OuyaInputManager.GetAxis("LY", localPlayerNumber) > 0.3 && player.position.y < map.GetComponent<map>().mapScale.y - map.GetComponent<map>().mapScale.y / 2 - .5)
 		{
 	        transform.Translate(0,OuyaInputManager.GetAxis("LY", localPlayerNumber) * -1 * VERT_MOVE_SPEED * Time.deltaTime,0);
 			currentDirection += "Down";
 		}
 #endif
 		//move player
-		if (Input.GetAxis(playerNum + "Horizontal") < -0.3)
+		if (Input.GetAxis(playerNum + "Horizontal") < -0.3 && player.position.x > -1 * map.GetComponent<map>().mapScale.x / 2 + 1.25)
 		{
 	        player.transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
 			gun.transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
 			currentDirection += "Left";
 		}
-		else if (Input.GetAxis(playerNum + "Horizontal") > 0.3)
+		else if (Input.GetAxis(playerNum + "Horizontal") > 0.3 && player.position.x < map.GetComponent<map>().mapScale.x - map.GetComponent<map>().mapScale.x / 2)
 		{
 	        player.transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
 			gun.transform.Translate(Input.GetAxis(playerNum + "Horizontal") * MOVE_SPEED * Time.deltaTime,0,0);
 			currentDirection += "Right";
 		}
 			
-		if (Input.GetAxis(playerNum + "Vertical") < -0.3)
+		if (Input.GetAxis(playerNum + "Vertical") < -0.3 && player.position.y > -1 * map.GetComponent<map>().mapScale.y / 2 + .5)
 		{
 	        player.transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
 			gun.transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
 			currentDirection += "Down";
 		}
-		else if (Input.GetAxis(playerNum + "Vertical") > 0.3)
+		else if (Input.GetAxis(playerNum + "Vertical") > 0.3 && player.position.y < map.GetComponent<map>().mapScale.y - map.GetComponent<map>().mapScale.y / 2 - .5)
 		{
 	        player.transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
 			gun.transform.Translate(0,Input.GetAxis(playerNum + "Vertical") * VERT_MOVE_SPEED * Time.deltaTime,0);
@@ -324,22 +324,22 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	void dashPlayer()
 	{
-		if(dashDirection.Contains("Left"))
+		if(dashDirection.Contains("Left") && player.position.x > -1 * map.GetComponent<map>().mapScale.x / 2 + 1.25)
 		{
 			player.transform.Translate(DASH_SPEED * Time.deltaTime * -1,0,0);	
 		}
 		
-		if(dashDirection.Contains("Right"))
+		if(dashDirection.Contains("Right") && player.position.x < map.GetComponent<map>().mapScale.x - map.GetComponent<map>().mapScale.x / 2)
 		{
 			player.transform.Translate(DASH_SPEED * Time.deltaTime,0,0);	
 		}
 		
-		if(dashDirection.Contains("Up"))
+		if(dashDirection.Contains("Up") && player.position.y < map.GetComponent<map>().mapScale.y - map.GetComponent<map>().mapScale.y / 2 - .5)
 		{
 			player.transform.Translate(0,DASH_SPEED * Time.deltaTime,0);	
 		}
 		
-		if(dashDirection.Contains("Down"))
+		if(dashDirection.Contains("Down") && player.position.y > -1 * map.GetComponent<map>().mapScale.y / 2 + .5)
 		{
 			player.transform.Translate(0,DASH_SPEED * Time.deltaTime * -1,0);	
 		}

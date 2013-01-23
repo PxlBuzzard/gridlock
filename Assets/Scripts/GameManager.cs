@@ -25,6 +25,7 @@ public class GameManager : Photon.MonoBehaviour {
 	public Texture2D logoPlanet;
 	public Texture2D pressStart;
 	public Texture2D controllerHelp;
+	public OTSound mainMusic;
 	
 	public OTAnimatingSprite player;
 	public OTTileMap map;
@@ -47,6 +48,9 @@ public class GameManager : Photon.MonoBehaviour {
 		{
 			PhotonNetwork.ConnectUsingSettings("1.0");
 		}
+		
+		mainMusic = new OTSound("main_theme");
+		mainMusic.Volume(.5f);
 		
 		//create a random room name
 		roomName = "Gridlock Prototype Server"; //"Gridlock Test Room #" + (int)(Random.value * 1000);
@@ -76,10 +80,11 @@ public class GameManager : Photon.MonoBehaviour {
 		{
 			case GameState.Startup:
 				{
-					// start playing music here
-			
 					if (timer.isFinished)
 					{
+						// start playing music here
+						mainMusic.Play(true);
+				
 						// (Fade in)Super Company presents...(fade out)
 						Color startColor = Color.white;
 						startColor.a = Mathf.Sin((Time.fixedTime - .95f) * 1f);

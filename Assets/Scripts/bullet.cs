@@ -33,6 +33,8 @@ public class bullet : Photon.MonoBehaviour
 	/// </summary>
 	void Update ()
 	{
+		thisBullet.transform.localScale = new Vector3(.5f, .2f, 1f);
+		
 		if(!isDead)
 		{
 			thisBullet.collidable = true;

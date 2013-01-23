@@ -6,6 +6,7 @@ using System.Collections;
 /// </summary>
 public class healthBar : MonoBehaviour {
     
+	#region Variables
 	private const int BAR_HEIGHT = 8;
     public int maxHealth;
     public int currentHealth;
@@ -17,6 +18,7 @@ public class healthBar : MonoBehaviour {
 	private GUIStyle killStyle;
 	public OTAnimatingSprite parent;
 	public bool showKills;
+	#endregion
 	
 	/// <summary>
 	/// Start this instance.
@@ -65,13 +67,13 @@ public class healthBar : MonoBehaviour {
     	screenPosition.y = Screen.height - screenPosition.y;
 		
 		//draw the health boxes
-        GUI.Box(new Rect(screenPosition.x - (maxHealthBarLength / 2), screenPosition.y - 40, maxHealthBarLength, BAR_HEIGHT), "", maxStyle);
-        GUI.Box(new Rect(screenPosition.x - (maxHealthBarLength / 2), screenPosition.y - 40, healthBarLength, BAR_HEIGHT), "", currentStyle);
+        GUI.Box(new Rect(screenPosition.x - (maxHealthBarLength / 2), screenPosition.y - 42, maxHealthBarLength, BAR_HEIGHT), "", maxStyle);
+        GUI.Box(new Rect(screenPosition.x - (maxHealthBarLength / 2), screenPosition.y - 42, healthBarLength, BAR_HEIGHT), "", currentStyle);
 		
 		//draw kill count
 		if (showKills)
 		{
-			GUI.Box(new Rect(screenPosition.x - 100, screenPosition.y - 80, 200, 50), "Kills: " + parent.GetComponent<playerUpdate>().killScore, killStyle);
+			GUI.Box(new Rect(screenPosition.x - 100, screenPosition.y - 85, 200, 50), "Kills: " + parent.GetComponent<playerUpdate>().killScore, killStyle);
 		}
 	}
     
@@ -97,22 +99,26 @@ public class healthBar : MonoBehaviour {
 		//get the current colors
 		Color fadeColor = currentStyle.normal.background.GetPixel(0, 0);
 		Color fadeColor2 = maxStyle.normal.background.GetPixel(0, 0);
+		Color fadeColor3 = killStyle.normal.textColor;
 		
 		//change the alpha
 		if (decrement)
 		{
 			fadeColor.a -= diff;
 			fadeColor2.a -= diff;
+			fadeColor3.a -= diff;
 		}
 		else
 		{
 			fadeColor.a = diff;
 			fadeColor2.a = diff;
+			fadeColor3.a = diff;
 		}
 		
 		//set new color
 		currentStyle.normal.background.SetPixel(0, 0, fadeColor);
 		maxStyle.normal.background.SetPixel(0, 0, fadeColor2);
+		killStyle.normal.textColor = fadeColor3;
 		
 		//send update to graphics card
 		currentStyle.normal.background.Apply();

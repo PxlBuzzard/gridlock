@@ -445,14 +445,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public void GainKill ()
 	{
 		killScore++;
-		if (killScore >= 15)
+		if (killScore >= GameManager.KILLS_TO_WIN)
 			GameObject.Find("Main Camera").GetComponent<GameManager>().gameState = GameManager.GameState.Leaderboard;
 	}
 	
 	/// <summary>
 	/// Respawn the player.
 	/// </summary>
-	void Respawn()
+	public void Respawn()
 	{
 		player.alpha = 1;
 		isDead = false;
@@ -467,6 +467,15 @@ public class playerUpdate : Photon.MonoBehaviour {
 		int randomSpawnPoint = (int)(Random.value * (map.GetComponent<map>().spawnPoints.Count - 1));
 		player.position = new Vector3(map.GetComponent<map>().spawnPoints[randomSpawnPoint].x * map.GetComponent<map>().conversionScale.x - map.transform.localScale.x / 2, 
 			map.GetComponent<map>().spawnPoints[randomSpawnPoint].y * map.GetComponent<map>().conversionScale.y - map.transform.localScale.y / 2, player.depth);
+	}
+	
+	/// <summary>
+	/// Resets the player after the end of a round.
+	/// </summary>
+	public void ResetRound ()
+	{
+		Respawn();
+		killScore = 0;
 	}
 	
 	/// <summary>

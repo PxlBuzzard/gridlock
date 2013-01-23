@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="25" height="25" tilewidth="128" tileheight="76">
  <tileset firstgid="1" name="allthetiles" tilewidth="128" tileheight="76">
-  <image source="allthetiles.png" width="512" height="512"/>
+  <image source="Maps/allthetiles.png" width="512" height="512"/>
  </tileset>
  <tileset firstgid="25" name="allthetiles1" tilewidth="128" tileheight="76">
   <tileoffset x="64" y="38"/>
-  <image source="allthetiles1.png" width="512" height="512"/>
+  <image source="Maps/allthetiles.png" width="512" height="512"/>
  </tileset>
  <layer name="Tile Layer 1" width="25" height="25">
   <data>
@@ -1269,4 +1269,26 @@
    <tile gid="39"/>
   </data>
  </layer>
+ <objectgroup name="Object Layer 1" width="50" height="50">
+  <object name="spawn_Point" gid="25" x="832" y="766">
+   <properties>
+    <property name="num" value="1"/>
+   </properties>
+  </object>
+  <object name="spawn_Point" gid="25" x="5824" y="582">
+   <properties>
+    <property name="num" value="1"/>
+   </properties>
+  </object>
+  <object name="spawn_Point" gid="25" x="5728" y="3182">
+   <properties>
+    <property name="num" value="4"/>
+   </properties>
+  </object>
+  <object name="spawn_Point" gid="25" x="1016" y="3142">
+   <properties>
+    <property name="num" value="3"/>
+   </properties>
+  </object>
+ </objectgroup>
 </map>

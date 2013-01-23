@@ -6,7 +6,7 @@ using System.Xml;
 public class map : MonoBehaviour 
 {
 	public OTTileMap currentMap;
-	public Vector3 mapScale = new Vector3(128, 76, 1);
+	public Vector3 mapScale = new Vector3(64, 38, 1);
 	public List<Vector2> spawnPoints;
 	public Vector2 conversionScale;
 	public bool mapLoaded = true;

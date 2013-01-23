@@ -6,30 +6,36 @@ using System.Xml;
 public class map : MonoBehaviour 
 {
 	public OTTileMap currentMap;
-	public Vector3 mapScale = new Vector3(64, 38, 1);
+	public Vector3 mapScale;
 	public List<Vector2> spawnPoints;
 	public Vector2 conversionScale;
 	public bool mapLoaded = true;
 	
-	// Use this for initialization
+	/// <summary>
+	/// Start this instance.
+	/// </summary>
 	void Start () 
 	{
 		LoadMap ("Map_roads");
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Update this instance.
+	/// </summary>
 	void Update () 
 	{
 		// When method LoadMap is called it automatically reloads the map, resetting scale, depth, etc. once start is over
 		// This will reset them whenever a new map is loaded
 		if(mapLoaded)
-		{
+		{			
 			mapLoaded = false;
+			currentMap.transform.localScale = mapScale;
 			Vector3 tempStartScale = currentMap.otTransform.localScale;
-			currentMap.otTransform.localScale = mapScale;
+			
 			conversionScale = new Vector2(mapScale.x / tempStartScale.x, mapScale.y / tempStartScale.y);
 			currentMap.depth = 1;
 		}
+		
 	}
 	
 	void LoadMap (string mapToLoad)

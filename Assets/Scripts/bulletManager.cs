@@ -25,6 +25,7 @@ public class bulletManager : Photon.MonoBehaviour
 			aBullet.visible = false;
 			inactiveBullets.Enqueue(aBullet);
 			aBullet.otCollider = new BoxCollider();
+			aBullet.position = new Vector2(9999, 9999);
 		}
 	}
 	

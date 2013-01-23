@@ -78,6 +78,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		theHealthBar.maxHealth = maxHealth;
 		theHealthBar.currentHealth = maxHealth;
 		theBulletManager.player = player;
+		theHealthBar.parent = player;
 		
 		gunShot = new OTSound("gunShot");
 		gunShot.Volume(.2f);
@@ -413,6 +414,16 @@ public class playerUpdate : Photon.MonoBehaviour {
 		yield return new WaitForSeconds(3f);
 		
 		Respawn();
+	}
+	
+	/// <summary>
+	/// Give the player a kill and check victory condition for FFA.
+	/// </summary>
+	public void GainKill ()
+	{
+		killScore++;
+		if (killScore >= 15)
+			GameObject.Find("Main Camera").GetComponent<GameManager>().gameState = GameManager.GameState.Leaderboard;
 	}
 	
 	/// <summary>

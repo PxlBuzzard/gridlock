@@ -132,11 +132,12 @@ public class GameManager : Photon.MonoBehaviour {
 					{
 						gameState = GameState.Loading;
 					}
-			
+			#if UNITY_ANDROID
 					if (OuyaInputManager.GetButtonDown("O", OuyaSDK.OuyaPlayer.player1))
 					{
 						gameState = GameState.Loading;
 					}
+#endif
 			
 					break;
 				}

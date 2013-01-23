@@ -113,9 +113,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 		   	string currentDirection = "";
 			string currentAimingDirection = "";
 			
-			if(!dashCooldownTimer.isRunning && !dashTimer.isRunning && (Input.GetKey(KeyCode.E) || 
-																		OuyaInputManager.GetButtonDown("O", localPlayerNumber) ||
-																		OuyaInputManager.GetButtonDown("LB", localPlayerNumber)))
+			if(!dashCooldownTimer.isRunning && !dashTimer.isRunning && (Input.GetKey(KeyCode.E) 
+#if UNITY_ANDROID
+																	|| 	OuyaInputManager.GetButtonDown("O", localPlayerNumber) ||
+																		OuyaInputManager.GetButtonDown("LB", localPlayerNumber)
+#endif
+				))
 			{
 				dashDirection = lastDirection;
 				dashTimer.Countdown(.2f);
@@ -143,20 +146,36 @@ public class playerUpdate : Photon.MonoBehaviour {
 			}
 			
 			// Player aiming
-			if ((Input.GetAxis(playerNum + "Horizontal Aiming") < -0.5) || (OuyaInputManager.GetAxis("RX", localPlayerNumber) < -0.25))
+			if ((Input.GetAxis(playerNum + "Horizontal Aiming") < -0.5) 
+#if UNITY_ANDROID
+				|| (OuyaInputManager.GetAxis("RX", localPlayerNumber) < -0.25)
+#endif
+				)
 			{	
 				currentAimingDirection += "Left";
 			}
-			else if ((Input.GetAxis(playerNum + "Horizontal Aiming")) > 0.5 || (OuyaInputManager.GetAxis("RX", localPlayerNumber) > 0.25))
+			else if ((Input.GetAxis(playerNum + "Horizontal Aiming")) > 0.5 
+				#if UNITY_ANDROID
+				|| (OuyaInputManager.GetAxis("RX", localPlayerNumber) > 0.25)
+#endif
+				)
 			{
 				currentAimingDirection += "Right";
 			}
 				
-			if ((Input.GetAxis(playerNum + "Vertical Aiming")) < -0.5 || (OuyaInputManager.GetAxis("RY", localPlayerNumber) < -0.25))
+			if ((Input.GetAxis(playerNum + "Vertical Aiming")) < -0.5 
+#if UNITY_ANDROID
+				|| (OuyaInputManager.GetAxis("RY", localPlayerNumber) < -0.25)
+#endif
+				)
 			{
 				currentAimingDirection += "Down";
 			}
-			else if ((Input.GetAxis(playerNum + "Vertical Aiming")) > 0.5 || (OuyaInputManager.GetAxis("RY", localPlayerNumber) > 0.25))
+			else if ((Input.GetAxis(playerNum + "Vertical Aiming")) > 0.5 
+#if UNITY_ANDROID
+				|| (OuyaInputManager.GetAxis("RY", localPlayerNumber) > 0.25)
+#endif
+				)
 			{
 				currentAimingDirection += "Up";
 			}
@@ -194,11 +213,14 @@ public class playerUpdate : Photon.MonoBehaviour {
 			//fire bullets
 			if(!dashTimer.isRunning)
 			{
-				isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot") || 
-											OuyaInputManager.GetAxis("RT", localPlayerNumber) > .25 ||
+				isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot") 
+#if UNITY_ANDROID
+										||	OuyaInputManager.GetAxis("RT", localPlayerNumber) > .25 ||
 											OuyaInputManager.GetButtonDown("A", localPlayerNumber) || 
 											OuyaInputManager.GetButtonDown("RT", localPlayerNumber) || 
-											OuyaInputManager.GetButtonDown("RB", localPlayerNumber));
+											OuyaInputManager.GetButtonDown("RB", localPlayerNumber)
+#endif
+					);
 			}
 			else
 			{
@@ -245,6 +267,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	string movePlayer(string currentDirection)
 	{
+#if UNITY_ANDROID
 		// Move player ouya
 		if (OuyaInputManager.GetAxis("LX", localPlayerNumber) < -0.3)
 		{
@@ -267,7 +290,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 	        transform.Translate(0,OuyaInputManager.GetAxis("LY", localPlayerNumber) * -1 * VERT_MOVE_SPEED * Time.deltaTime,0);
 			currentDirection += "Down";
 		}
-		
+#endif
 		//move player
 		if (Input.GetAxis(playerNum + "Horizontal") < -0.3)
 		{

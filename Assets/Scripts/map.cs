@@ -14,7 +14,7 @@ public class map : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		LoadMap ("map1");
+		LoadMap ("Map_roads");
 	}
 	
 	// Update is called once per frame

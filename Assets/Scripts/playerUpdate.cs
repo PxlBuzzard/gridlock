@@ -34,6 +34,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 	private Timer dashCooldownTimer = new Timer();
 	
 	public string playerNum;
+	public int killScore;
 	
 	private OuyaSDK.OuyaPlayer localPlayerNumber;
 	
@@ -68,6 +69,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 		
 		gun.transform.localScale = new Vector3(1.185185f, 1.185185f, 1);
 		gun.depth = -10;
+		gun.visible = false;
+		gun.collidable = false;
 		
 		maxHealth = 300;
 		isDead = false;
@@ -357,7 +360,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// <param name='damage'>
 	/// Amount to damage the player by. (should be positive)
 	/// </param>
-	public void DeductHealth(int damage)
+	public bool DeductHealth(int damage)
 	{
 		if (photonView.isMine && !isDead)
 		{
@@ -373,8 +376,13 @@ public class playerUpdate : Photon.MonoBehaviour {
 			
 			//kill the player if he drops below 0 HP
 			if(currentHealth <= 0)
+			{
 				StartCoroutine(KillPlayer());
+				return true;
+			}
 		}
+		
+		return false;
 	}
 	
 	/// <summary>
@@ -423,7 +431,8 @@ public class playerUpdate : Photon.MonoBehaviour {
 		
 		//switch to respawn location
 		int randomSpawnPoint = (int)(Random.value * (map.GetComponent<map>().spawnPoints.Count - 1));
-		player.position = new Vector3(map.GetComponent<map>().spawnPoints[0].x * map.GetComponent<map>().conversionScale.x, map.GetComponent<map>().spawnPoints[0].y * map.GetComponent<map>().conversionScale.y, player.depth);
+		player.position = new Vector3(map.GetComponent<map>().spawnPoints[randomSpawnPoint].x * map.GetComponent<map>().conversionScale.x - map.transform.localScale.x / 2, 
+			map.GetComponent<map>().spawnPoints[randomSpawnPoint].y * map.GetComponent<map>().conversionScale.y - map.transform.localScale.y / 2, player.depth);
 	}
 	
 	/// <summary>

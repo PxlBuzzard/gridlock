@@ -36,8 +36,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public string playerNum;
 	public int killScore;
 	
-	private OuyaSDK.OuyaPlayer localPlayerNumber;
-	
 	/// <summary>
 	/// Start this instance.
 	/// </summary>
@@ -82,17 +80,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 		
 		gunShot = new OTSound("gunShot");
 		gunShot.Volume(.02f);
-		
-		if (playerNum == "P1")
-		{
-			localPlayerNumber = OuyaSDK.OuyaPlayer.player1;
-		}
-		else if (playerNum == "")
-		{
-			localPlayerNumber = OuyaSDK.OuyaPlayer.player2;
-		} else {
-			localPlayerNumber = OuyaSDK.OuyaPlayer.none;	
-		}
 	}
 	
 	void Awake()
@@ -113,12 +100,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		   	string currentDirection = "";
 			string currentAimingDirection = "";
 			
-			if(!dashCooldownTimer.isRunning && !dashTimer.isRunning && (Input.GetKey(KeyCode.E) 
-#if UNITY_ANDROID
-																	|| 	OuyaInputManager.GetButtonDown("O", localPlayerNumber) ||
-																		OuyaInputManager.GetButtonDown("LB", localPlayerNumber)
-#endif
-				))
+			if(!dashCooldownTimer.isRunning && !dashTimer.isRunning && (Input.GetKey(KeyCode.E)))
 			{
 				dashDirection = lastDirection;
 				dashTimer.Countdown(.2f);
@@ -146,36 +128,20 @@ public class playerUpdate : Photon.MonoBehaviour {
 			}
 			
 			// Player aiming
-			if ((Input.GetAxis(playerNum + "Horizontal Aiming") < -0.5) 
-#if UNITY_ANDROID
-				|| (OuyaInputManager.GetAxis("RX", localPlayerNumber) < -0.25)
-#endif
-				)
+			if ((Input.GetAxis(playerNum + "Horizontal Aiming") < -0.5))
 			{	
 				currentAimingDirection += "Left";
 			}
-			else if ((Input.GetAxis(playerNum + "Horizontal Aiming")) > 0.5 
-				#if UNITY_ANDROID
-				|| (OuyaInputManager.GetAxis("RX", localPlayerNumber) > 0.25)
-#endif
-				)
+			else if ((Input.GetAxis(playerNum + "Horizontal Aiming")) > 0.5)
 			{
 				currentAimingDirection += "Right";
 			}
 				
-			if ((Input.GetAxis(playerNum + "Vertical Aiming")) < -0.5 
-#if UNITY_ANDROID
-				|| (OuyaInputManager.GetAxis("RY", localPlayerNumber) < -0.25)
-#endif
-				)
+			if ((Input.GetAxis(playerNum + "Vertical Aiming")) < -0.5)
 			{
 				currentAimingDirection += "Down";
 			}
-			else if ((Input.GetAxis(playerNum + "Vertical Aiming")) > 0.5 
-#if UNITY_ANDROID
-				|| (OuyaInputManager.GetAxis("RY", localPlayerNumber) > 0.25)
-#endif
-				)
+			else if ((Input.GetAxis(playerNum + "Vertical Aiming")) > 0.5)
 			{
 				currentAimingDirection += "Up";
 			}
@@ -213,14 +179,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 			//fire bullets
 			if(!dashTimer.isRunning)
 			{
-				isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot") 
-#if UNITY_ANDROID
-										||	OuyaInputManager.GetAxis("RT", localPlayerNumber) > .25 ||
-											OuyaInputManager.GetButtonDown("A", localPlayerNumber) || 
-											OuyaInputManager.GetButtonDown("RT", localPlayerNumber) || 
-											OuyaInputManager.GetButtonDown("RB", localPlayerNumber)
-#endif
-					);
+				isFiring = (Input.GetAxis(playerNum + "Shoot") < -0.04 || Input.GetButton(playerNum + "Shoot"));
 			}
 			else
 			{
@@ -267,30 +226,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	string movePlayer(string currentDirection)
 	{
-#if UNITY_ANDROID
-		// Move player ouya
-		if (OuyaInputManager.GetAxis("LX", localPlayerNumber) < -0.3 && player.position.x > -1 * map.GetComponent<map>().mapScale.x / 2 + 1.25)
-		{
-	        transform.Translate(OuyaInputManager.GetAxis("LX", localPlayerNumber) * MOVE_SPEED * Time.deltaTime,0,0);	
-			currentDirection += "Left";
-		}
-		else if (OuyaInputManager.GetAxis("LX", localPlayerNumber) > 0.3 && player.position.x < map.GetComponent<map>().mapScale.x - map.GetComponent<map>().mapScale.x / 2)
-		{
-	        transform.Translate(OuyaInputManager.GetAxis("LX", localPlayerNumber) * MOVE_SPEED * Time.deltaTime,0,0);
-			currentDirection += "Right";
-		}
-			
-		if (OuyaInputManager.GetAxis("LY", localPlayerNumber) < -0.3 && player.position.y < map.GetComponent<map>().mapScale.y - map.GetComponent<map>().mapScale.y / 2 - .5)
-		{
-	        transform.Translate(0,OuyaInputManager.GetAxis("LY", localPlayerNumber) * -1 * VERT_MOVE_SPEED * Time.deltaTime,0);	
-			currentDirection += "Up";
-		}
-		else if (OuyaInputManager.GetAxis("LY", localPlayerNumber) > 0.3 && player.position.y > -1 * map.GetComponent<map>().mapScale.y / 2 + .5)
-		{
-	        transform.Translate(0,OuyaInputManager.GetAxis("LY", localPlayerNumber) * -1 * VERT_MOVE_SPEED * Time.deltaTime,0);
-			currentDirection += "Down";
-		}
-#endif
 		//move player
 		if (Input.GetAxis(playerNum + "Horizontal") < -0.3 && player.position.x > -1 * map.GetComponent<map>().mapScale.x / 2 + 1.25)
 		{

@@ -141,13 +141,6 @@ public class GameManager : Photon.MonoBehaviour {
 					{
 						gameState = GameState.Loading;
 					}
-#if UNITY_ANDROID
-					if (OuyaInputManager.GetButtonDown("O", OuyaSDK.OuyaPlayer.player1))
-					{
-						gameState = GameState.Loading;
-					}
-#endif
-			
 					break;
 				}
 			
@@ -398,11 +391,7 @@ public class GameManager : Photon.MonoBehaviour {
 	void Update()
 	{
 		//check for input from a second player
-		if (Input.GetButtonDown("P2join") && !p2exists && gameState == GameState.InGame
-#if UNITY_ANDROID
-			|| OuyaInputManager.GetButtonDown("O", OuyaSDK.OuyaPlayer.player2) 
-#endif
-			)
+		if (Input.GetButtonDown("P2join") && !p2exists && gameState == GameState.InGame)
 		{
 			PhotonNetwork.Instantiate("PlayerTwoPrefab", spawnPoint, Quaternion.identity, 0);
 			p2exists = true;

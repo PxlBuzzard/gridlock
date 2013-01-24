@@ -81,7 +81,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		theHealthBar.parent = player;
 		
 		gunShot = new OTSound("gunShot");
-		gunShot.Volume(.2f);
+		gunShot.Volume(.02f);
 		
 		if (playerNum == "P1")
 		{
@@ -280,12 +280,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 			currentDirection += "Right";
 		}
 			
-		if (OuyaInputManager.GetAxis("LY", localPlayerNumber) < -0.3 && player.position.y > -1 * map.GetComponent<map>().mapScale.y / 2 + .5)
+		if (OuyaInputManager.GetAxis("LY", localPlayerNumber) < -0.3 && player.position.y < map.GetComponent<map>().mapScale.y - map.GetComponent<map>().mapScale.y / 2 - .5)
 		{
 	        transform.Translate(0,OuyaInputManager.GetAxis("LY", localPlayerNumber) * -1 * VERT_MOVE_SPEED * Time.deltaTime,0);	
 			currentDirection += "Up";
 		}
-		else if (OuyaInputManager.GetAxis("LY", localPlayerNumber) > 0.3 && player.position.y < map.GetComponent<map>().mapScale.y - map.GetComponent<map>().mapScale.y / 2 - .5)
+		else if (OuyaInputManager.GetAxis("LY", localPlayerNumber) > 0.3 && player.position.y > -1 * map.GetComponent<map>().mapScale.y / 2 + .5)
 		{
 	        transform.Translate(0,OuyaInputManager.GetAxis("LY", localPlayerNumber) * -1 * VERT_MOVE_SPEED * Time.deltaTime,0);
 			currentDirection += "Down";
@@ -378,6 +378,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 		}
 	}
 	
+	void OnDestroy ()
+	{
+		print ("a player left the room");
+		Destroy(theBulletManager);
+	}
+	
 	/// <summary>
 	/// Deducts the health.
 	/// </summary>
@@ -464,9 +470,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 		currentHealth = maxHealth;
 		
 		//switch to respawn location
-		int randomSpawnPoint = (int)(Random.value * (map.GetComponent<map>().spawnPoints.Count - 1));
-		player.position = new Vector3(map.GetComponent<map>().spawnPoints[randomSpawnPoint].x * map.GetComponent<map>().conversionScale.x - map.transform.localScale.x / 2, 
-			map.GetComponent<map>().spawnPoints[randomSpawnPoint].y * map.GetComponent<map>().conversionScale.y - map.transform.localScale.y / 2, player.depth);
+		if (photonView.isMine)
+		{
+			int randomSpawnPoint = (int)(Random.value * (map.GetComponent<map>().spawnPoints.Count - 1));
+			player.position = new Vector3(map.GetComponent<map>().spawnPoints[randomSpawnPoint].x * map.GetComponent<map>().conversionScale.x - map.transform.localScale.x / 2, 
+				map.GetComponent<map>().spawnPoints[randomSpawnPoint].y * map.GetComponent<map>().conversionScale.y - map.transform.localScale.y / 2, player.depth);
+		}
 	}
 	
 	/// <summary>

@@ -51,8 +51,11 @@ public class GameManager : Photon.MonoBehaviour {
 			PhotonNetwork.ConnectUsingSettings("1.0");
 		}
 		
+		//start the background music
 		mainMusic = new OTSound("main_theme");
 		mainMusic.Volume(.5f);
+		mainMusic.Loop();
+		mainMusic.Stop();
 		
 		//create a random room name
 		roomName = "Gridlock Prototype Server"; //"Gridlock Test Room #" + (int)(Random.value * 1000);
@@ -84,9 +87,6 @@ public class GameManager : Photon.MonoBehaviour {
 				{
 					if (timer.isFinished)
 					{
-						// start playing music here
-						mainMusic.Play(true);
-				
 						// (Fade in)Super Company presents...(fade out)
 						Color startColor = Color.white;
 						startColor.a = Mathf.Sin((Time.fixedTime - .95f) * 1f);
@@ -98,6 +98,8 @@ public class GameManager : Photon.MonoBehaviour {
 						}
 						else
 						{
+							// start playing music here
+							mainMusic.Play();
 							timer.Reset();
 							gameState = GameState.MainMenu;
 						}
@@ -178,6 +180,9 @@ public class GameManager : Photon.MonoBehaviour {
 						companyStyle.alignment = TextAnchor.MiddleCenter;
 						companyStyle.normal.textColor = Color.white;
 						companyStyle.fontSize = 20;
+						//OTTextSprite pCount = (Instantiate(Resources.Load("TextPrefab")) as GameObject).GetComponent<OTTextSprite>();
+						//pCount.text = "Player count: " + (Mathf.Clamp(PhotonNetwork.countOfPlayersInRooms - 1, 0, 20));
+						//pCount.transform.position = new Vector3((Screen.width - 400) / 2, (Screen.height - 100) / 2, 0);
 						GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 100) / 2, 400, 100));
 							GUILayout.Label("Player count: " + (Mathf.Clamp(PhotonNetwork.countOfPlayersInRooms - 1, 0, 20)), companyStyle);
 						GUILayout.EndArea();

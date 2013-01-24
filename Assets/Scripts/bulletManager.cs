@@ -50,6 +50,24 @@ public class bulletManager : Photon.MonoBehaviour
 	}
 	
 	/// <summary>
+	/// Called when this class is being destroyed.
+	/// </summary>
+	void OnDestroy ()
+	{
+		print ("Delete bullet manager");
+		for (int i = 0; i < activeBullets.Count; i++)
+		{
+			Destroy(activeBullets[i].gameObject);
+		}
+		
+		for (int i = 0; i < inactiveBullets.Count; i++)
+		{
+			Destroy(inactiveBullets.Dequeue().gameObject);
+			i--;
+		}
+	}
+	
+	/// <summary>
 	/// Fire a bullet.
 	/// </summary>
 	public void Fire ()

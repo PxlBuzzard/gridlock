@@ -299,6 +299,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 				stream.SendNext(lastDirection);
 				stream.SendNext(isFiring);
 				stream.SendNext(currentHealth);
+				stream.SendNext(killScore);
 			}
 		}
 		else
@@ -309,6 +310,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 				lastDirection = (string)stream.ReceiveNext();
 				isFiring = (bool)stream.ReceiveNext();
 				currentHealth = (int)stream.ReceiveNext();
+				killScore = (int)stream.ReceiveNext();
 			}
 		}
 	}
@@ -385,9 +387,12 @@ public class playerUpdate : Photon.MonoBehaviour {
 	/// </summary>
 	public void GainKill ()
 	{
-		killScore++;
-		if (killScore >= GameManager.KILLS_TO_WIN)
-			GameObject.Find("Main Camera").GetComponent<GameManager>().gameState = GameManager.GameState.Leaderboard;
+		if (photonView.isMine)
+		{
+			killScore++;
+			if (killScore >= GameManager.KILLS_TO_WIN)
+				GameObject.Find("Main Camera").GetComponent<GameManager>().gameState = GameManager.GameState.Leaderboard;
+		}
 	}
 	
 	/// <summary>

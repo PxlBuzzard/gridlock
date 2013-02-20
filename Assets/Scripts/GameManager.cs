@@ -101,7 +101,8 @@ public class GameManager : Photon.MonoBehaviour {
 							// start playing music here
 							mainMusic.Play();
 							timer.Reset();
-							gameState = GameState.MainMenu;
+							if (Event.current.type == EventType.Repaint)
+								gameState = GameState.MainMenu;
 						}
 					}
 					else if (!timer.isRunning)
@@ -133,11 +134,8 @@ public class GameManager : Photon.MonoBehaviour {
 					GUI.color = startColor;
 					GUI.DrawTexture(new Rect((Screen.width - 843) / 2, (Screen.height + 500) / 2, 843, 121), pressStart);
 					
-					// TAKE THIS MUTHA OUT
-					//gameState = GameState.Loading;
-					
 					//check for input to move to loading screen
-					if (Event.current.type == EventType.KeyDown)
+				    if (Input.anyKeyDown)
 					{
 						gameState = GameState.Loading;
 					}
@@ -149,13 +147,20 @@ public class GameManager : Photon.MonoBehaviour {
 				{
 					if (timer.isFinished)
 					{
-						PhotonNetwork.JoinRoom(roomName);
-						if (PhotonNetwork.room == null)
+						if(RoomExists(roomName))
 						{
-							PhotonNetwork.CreateRoom(roomName, true, true, MAX_PLAYERS_IN_ROOM);	
+							PhotonNetwork.JoinRoom(roomName);
 						}
-						timer.Reset();
-						gameState = GameState.InGame;
+						else
+						{
+							PhotonNetwork.CreateRoom(roomName, true, true, MAX_PLAYERS_IN_ROOM);
+						}
+				
+						if (Event.current.type == EventType.Repaint)
+						{
+							gameState = GameState.InGame;
+							timer.Reset();
+						}
 					}
 					else if (!timer.isRunning)
 					{
@@ -173,9 +178,6 @@ public class GameManager : Photon.MonoBehaviour {
 						companyStyle.alignment = TextAnchor.MiddleCenter;
 						companyStyle.normal.textColor = Color.white;
 						companyStyle.fontSize = 20;
-						//OTTextSprite pCount = (Instantiate(Resources.Load("TextPrefab")) as GameObject).GetComponent<OTTextSprite>();
-						//pCount.text = "Player count: " + (Mathf.Clamp(PhotonNetwork.countOfPlayersInRooms - 1, 0, 20));
-						//pCount.transform.position = new Vector3((Screen.width - 400) / 2, (Screen.height - 100) / 2, 0);
 						GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 100) / 2, 400, 100));
 							GUILayout.Label("Player count: " + (Mathf.Clamp(PhotonNetwork.countOfPlayersInRooms - 1, 0, 20)), companyStyle);
 						GUILayout.EndArea();
@@ -304,67 +306,6 @@ public class GameManager : Photon.MonoBehaviour {
 					break;
 				}
 		}
-		
-		/* // ========= OLD MENU CODE, USED FOR REFERENCE ===========
-		if (PhotonNetwork.room == null || gameState == GameState.Paused)
-		{
-			if (GUILayout.Button(mute))
-			{
-				if (!AudioListener.pause)
-				{
-					AudioListener.pause = true;
-					mute = "Unmute";
-				} else {
-					AudioListener.pause = false;
-					mute = "Mute";
-				}
-			}
-			
-			GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 300) / 2, 400, 300));
-			if (GUILayout.Button("Click here to fill out the alpha feedback form :)"))
-				Application.OpenURL("https://docs.google.com/spreadsheet/viewform?formkey=dEVJY2NzYll4dC1OSWhFMklRcHY3TGc6MA");
-			GUILayout.Label("Main Menu");
-			GUILayout.Label("Create room");
-			GUILayout.BeginHorizontal();
-			roomName = GUILayout.TextField(roomName);
-			if (GUILayout.Button("Create"))
-			{
-				if (PhotonNetwork.room != null)
-				{
-					PhotonNetwork.LeaveRoom();
-				}
-				PhotonNetwork.CreateRoom(roomName, true, true, MAX_PLAYERS_IN_ROOM);
-				gameState = GameState.InGame;
-			}
-			GUILayout.EndHorizontal();
-			GUILayout.Space(30);
-			GUILayout.Label("Room Listing");
-			
-			//Show all rooms
-			foreach (RoomInfo room in PhotonNetwork.GetRoomList())
-			{
-				GUILayout.BeginHorizontal();
-				if (GUILayout.Button(room.name))
-				{
-					if (PhotonNetwork.room != null)
-					{
-						PhotonNetwork.LeaveRoom();
-					}
-					PhotonNetwork.JoinRoom(room.name);
-					gameState = GameState.InGame;
-				}
-				GUILayout.Label(room.playerCount + " / " + room.maxPlayers);
-				GUILayout.EndHorizontal();
-			}
-		
-			GUILayout.EndArea();
-		}
-		else
-		{
-			if (GUILayout.Button("Leave room"))
-				PhotonNetwork.LeaveRoom();
-		}
-		*/
 	}
 	
 	/// <summary>
@@ -378,11 +319,23 @@ public class GameManager : Photon.MonoBehaviour {
 		player.GetComponent<playerUpdate>().map = map;
 	}
 	
+	bool RoomExists(string roomName)
+	{
+		foreach(RoomInfo room in PhotonNetwork.GetRoomList())
+		{
+	   		if(room.name == roomName)
+			{
+	      		return true;
+			}
+   		}	
+		
+		return false;
+	}
+	
 	//TODO: Remove stuff if you leave a room
 	void OnLeftLobby()
 	{
 		//delete all the stuff
-		//print ("a player left the room");
 	}
 	
 	/// <summary>

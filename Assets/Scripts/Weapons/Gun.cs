@@ -1,11 +1,16 @@
 using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// A generic gun class.
+/// </summary>
 public class Gun : Weapon {
 	
 	#region Variables
-    protected Color bulletColor; // color modifier of the bullet
-    protected Texture2D bulletSprite; //custom bullet sprite
+    public string bulletSprite;
+	public OTAnimatingSprite player;
+	public OTAnimatingSprite gun;
+	public OTSound gunShot;
     #endregion
 	
 	/// <summary>
@@ -13,15 +18,18 @@ public class Gun : Weapon {
 	/// </summary>
 	void Start () 
 	{
-
+		gunShot = new OTSound("gunShot");
+		gunShot.Volume(.02f);
+		
+		for (int i = 0; i < gun.animation.framesets.Length; i++)
+			gun.animation.framesets[i].container = gun.spriteContainer;
 	}
 
     /// <summary>
     /// Generic pistol, should only be used for testing purposes.
     /// </summary>
-    public Gun(Color bColor, bool ChargeGun)
+    public Gun(bool ChargeGun)
     {
-        bulletColor = bColor;
         IsCharge = ChargeGun;
 
         if (IsCharge)
@@ -50,7 +58,6 @@ public class Gun : Weapon {
     /// </summary>
     /// <param name="weaponName">name of the gun</param>
     /// <param name="dmgPerAtk">damage per shot</param>
-    /// <param name="bColor">color of its bullets</param>
     /// <param name="gunSound">firing sound</param>
     /// <param name="weaponWeight">Light, Medium, or Heavy</param>
     /// <param name="isChargeGun">overheat (true) or ammo (false)</param>
@@ -59,11 +66,9 @@ public class Gun : Weapon {
     /// <param name="timeBetweenShots">The time between consecutive attacks</param>
     /// <param name="theBulletSprite">file path of the bullet sprite being used</param>
     public Gun(string weaponName, int dmgPerAtk, 
-		Color bColor, string gunSound,
-		bool isChargeGun, int maxAmmoOrCharge,
+		string gunSound, bool isChargeGun, int maxAmmoOrCharge,
         int chargeAmountOrBulletsFired, int timeBetweenShots, string theBulletSprite)
     {
-        bulletColor = bColor;
         theWeaponName = weaponName;
         damagePerAttack = dmgPerAtk;
         //attackSound = theContentManager.Load<SoundEffect>(gunSound);
@@ -104,7 +109,7 @@ public class Gun : Weapon {
     /// <returns>
     /// If the gun is allowed to shoot (true).
     /// </returns>
-    protected bool ShootCheck()
+    private bool ShootCheck()
     {
         if (Time.time - timeLastFired > timeBetweenAttack)
         {
@@ -117,13 +122,12 @@ public class Gun : Weapon {
     }
 
     /// <summary>
-    /// Updates bullet amount.
+    /// Updates bullets if charge weapon.
     /// </summary>
-    void Update()
+    void FixedUpdate()
     {
-        //change this to gameTime in the future
         if (isCharge && currentAmmo < maxAmmo)
-            currentAmmo += 1;
+            currentAmmo++;
     }
 
     /// <summary>
@@ -156,10 +160,4 @@ public class Gun : Weapon {
     //        weight, Convert.ToBoolean(parse[5]), Convert.ToInt32(parse[6]), Convert.ToInt32(parse[7]),
     //        Convert.ToInt32(parse[8]), parse[9]);
     //}
-
-    /// <returns>The name of the gun</returns>
-    public override string ToString()
-    {
-        return "Gun Name: " + theWeaponName;
-    }
 }

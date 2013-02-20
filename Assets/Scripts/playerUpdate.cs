@@ -6,6 +6,7 @@ using System.Collections;
 /// </summary>
 public class playerUpdate : Photon.MonoBehaviour {
 	
+	#region Fields
 	private const float ANIMATE_THRESHOLD = 0.075f;
 	public const int MOVE_SPEED = 5;
 	public const int VERT_MOVE_SPEED = 3;
@@ -17,8 +18,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 	public OTTileMap map;
 	public bulletManager theBulletManager;
 	public healthBar theHealthBar;
-	
-	private OTSound gunShot;
 	
 	public int numCoins;
 	public coinManager theCoinManager;
@@ -35,6 +34,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	public string playerNum;
 	public int killScore;
+	#endregion
 	
 	/// <summary>
 	/// Start this instance.
@@ -62,8 +62,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		
 		for (int i = 0; i < player.animation.framesets.Length; i++)
 			player.animation.framesets[i].container = player.spriteContainer;
-		for (int i = 0; i < gun.animation.framesets.Length; i++)
-			gun.animation.framesets[i].container = gun.spriteContainer;
+		
 		
 		gun.transform.localScale = new Vector3(1.185185f, 1.185185f, 1);
 		gun.depth = -10;
@@ -77,9 +76,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 		theHealthBar.currentHealth = maxHealth;
 		theBulletManager.player = player;
 		theHealthBar.parent = player;
-		
-		gunShot = new OTSound("gunShot");
-		gunShot.Volume(.02f);
 	}
 	
 	void Awake()
@@ -205,7 +201,7 @@ public class playerUpdate : Photon.MonoBehaviour {
 		
 		if (isFiring)
 		{
-			gunShot.Play(true);
+			//gunShot.Play(true);
 			theBulletManager.Fire();
 		}
 		
@@ -315,7 +311,6 @@ public class playerUpdate : Photon.MonoBehaviour {
 	
 	void OnDestroy ()
 	{
-		print ("a player left the room");
 		Destroy(theBulletManager);
 	}
 	

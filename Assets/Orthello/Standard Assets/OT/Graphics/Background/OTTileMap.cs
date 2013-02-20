@@ -843,26 +843,28 @@ public class OTTileMap : OTObject
         base.Start();
         _tileMapXML = tileMapXML;
         meshDirty = false;
-
-        if (tileSets.Length > 0)
-        {
-            for (int i = 0; i < tileSets.Length; i++)
-            {
-				//((int)(image height) / (int)tile height) = remainder)
-				//(image height) - remainder) / tile height = tiles down
-				//(image width / tile width = til
-				//(ts.tilesXY.x * ts.tilesXY.y - 1) + 1)
-				
-                OTTileSet ts = tileSets[i];
-				
-                int tileCount = (int)(ts.tilesXY.x * ts.tilesXY.y);
-                for (int ii = ts.firstGid; ii < ts.firstGid + tileCount; ii++)
-				{
-                    tileSetLookup.Add(ii, ts);
-				}
-            }
-        }
-
+		
+		if(tileMapXML != null)
+		{
+	        if (tileSets.Length > 0)
+	        {
+	            for (int i = 0; i < tileSets.Length; i++)
+	            {
+					//((int)(image height) / (int)tile height) = remainder)
+					//(image height) - remainder) / tile height = tiles down
+					//(image width / tile width = til
+					//(ts.tilesXY.x * ts.tilesXY.y - 1) + 1)
+					
+	                OTTileSet ts = tileSets[i];
+					
+	                int tileCount = (int)(ts.tilesXY.x * ts.tilesXY.y);
+	                for (int ii = ts.firstGid; ii < ts.firstGid + tileCount; ii++)
+					{
+	                    tileSetLookup.Add(ii, ts);
+					}
+	            }
+        	}
+		}
 
     }
     // Update is called once per frame

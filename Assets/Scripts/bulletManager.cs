@@ -54,7 +54,6 @@ public class bulletManager : Photon.MonoBehaviour
 	/// </summary>
 	void OnDestroy ()
 	{
-		print ("Delete bullet manager");
 		for (int i = 0; i < activeBullets.Count; i++)
 		{
 			Destroy(activeBullets[i].gameObject);

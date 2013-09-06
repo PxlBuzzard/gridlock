@@ -144,6 +144,7 @@ public class OTSpriteAtlasImportText : OTSpriteAtlasImport
     /// </summary>
     protected bool Parse()
     {
+		lines.Clear();
 		string[] _lines = new string[]{};
 		if (atlasDataFile.text.IndexOf("\r\n")>=0)
 			_lines = atlasDataFile.text.Split(new char[] { '\r', '\n' },  System.StringSplitOptions.None);

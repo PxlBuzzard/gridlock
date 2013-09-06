@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml;
 using System.IO;
 
 /// <summary>
@@ -20,38 +19,40 @@ public class OTSpriteAtlasBMFontXml : OTSpriteAtlasImportXML
     {
         if (!ValidXML())
             return new OTAtlasData[] { };
-
+				
         List<OTAtlasData> data = new List<OTAtlasData>();
-        if (xml.DocumentElement.Name == "font")
-        {
-			XmlNode info = xml.DocumentElement.SelectSingleNode("info");
-			if (info!=null && AttrS(info,"face")!="")
-			{					
-				name = "Font "+AttrS(info,"face")+"-"+AttrS(info,"size");
-				if (AttrS(info,"bold")=="1")
-					name += "b";
-				if (AttrS(info,"italic")=="1")
-					name += "i";
-							
-				metaType = "FONT";
-            	XmlNode charsNode = xml.DocumentElement.SelectSingleNode("chars");
-				if (charsNode!=null)
-				{
-					XmlNodeList chars = charsNode.SelectNodes("char");
-		            for (int si = 0; si < chars.Count; si++)
-		            {
-		                XmlNode charNode = chars[si];
-		                OTAtlasData ad = new OTAtlasData();
 		
-		                ad.name = ""+AttrI(charNode,"id");
-		                ad.position = new Vector2(AttrI(charNode,"x"), AttrI(charNode,"y"));
-		                ad.size = new Vector2(AttrI(charNode,"width"), AttrI(charNode,"height"));
-		                ad.offset = new Vector2(AttrI(charNode,"xoffset"), AttrI(charNode,"yoffset"));		
-						
-						ad.AddMeta("dx",AttrS(charNode,"xadvance"));
-						
-		                data.Add(ad);
-		            }
+        if (xml.rootName == "font")
+        {
+			OTDataset dsInfo = xml.Dataset("info");
+			if (!dsInfo.EOF)
+			{
+				if (dsInfo.AsString("face")!="")
+				{					
+					if (name.IndexOf("Container (id=")==0)
+					{			
+						name = "Font "+dsInfo.AsString("face")+"-"+dsInfo.AsString("size");
+						if (dsInfo.AsString("bold")=="1")
+							name += "b";
+						if (dsInfo.AsString("italic")=="1")
+							name += "i";
+					}
+								
+					metaType = "FONT";
+					OTDataset dsChars = xml.Dataset("chars");
+					while (!dsChars.EOF)
+					{
+	                	OTAtlasData ad = new OTAtlasData();
+			
+			            ad.name = ""+dsChars.AsInt("id");
+			            ad.position = new Vector2(dsChars.AsInt("x"), dsChars.AsInt("y"));
+			             ad.size = new Vector2(dsChars.AsInt("width"), dsChars.AsInt("height"));
+			            ad.offset = new Vector2(dsChars.AsInt("xoffset"), dsChars.AsInt("yoffset"));		
+							
+						ad.AddMeta("dx",dsChars.AsString("xadvance"));
+			            data.Add(ad);
+						dsChars.Next();
+					}
 				}
 			}
         }

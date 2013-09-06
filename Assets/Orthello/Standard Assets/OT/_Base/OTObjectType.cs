@@ -77,7 +77,7 @@ public class OTObjectType {
             return "SpriteAtlas";
         }
     }
-	
+
     public static string GradientSprite
     {
         get
@@ -101,5 +101,22 @@ public class OTObjectType {
             return "Scale9Sprite";
         }
     }
-
+	
+    public static string ClippingAreaSprite
+    {
+        get
+        {
+            return "ClippingAreaSprite";
+        }
+    }
+	
+    public static string ClipSprite
+    {
+        get
+        {
+            return "ClipSprite";
+        }
+    }
+	
+	
 }

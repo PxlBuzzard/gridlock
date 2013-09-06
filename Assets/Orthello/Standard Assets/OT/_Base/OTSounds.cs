@@ -3,9 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 
 [ExecuteInEditMode]
+/// <summary>
+/// Stores and handles all orthello sounds
+/// </summary>
 public class OTSounds : MonoBehaviour {
-		
+	
+	/// <summary>
+	/// mute all sounds when true
+	/// </summary>
 	public bool	 mute = false;
+	/// <summary>
+	/// General sound volume
+	/// </summary>
 	public float volume = 1f;
 	
 	static OTSounds _instance;
@@ -102,6 +111,13 @@ public class OTSounds : MonoBehaviour {
 	}
 }
 
+/// <summary>
+/// OT sound class
+/// </summary>
+/// <remarks>
+/// This class is used to play a sound (fire and forget) or 
+/// store a sound and play it later.
+/// </remarks>
 public class OTSound
 {
 	public float time = 0;
@@ -128,6 +144,9 @@ public class OTSound
 	float _pitch = 1;
 	string _name = "";
 	
+	/// <summary>
+	/// All available sounds known to orthello
+	/// </summary>
 	static List<OTSound> sounds
 	{
 		get
@@ -135,7 +154,10 @@ public class OTSound
 			return OTSounds.instance.sounds;
 		}
 	}
-
+	
+	/// <summary>
+	/// Name of this sound
+	/// </summary>
 	public string name
 	{
 		get
@@ -209,6 +231,9 @@ public class OTSound
 		sounds.Add(this);
 	}
 	
+	/// <summary>
+	/// Instantiates a new sound of type 'name'
+	/// </summary>
 	public OTSound(string name)
 	{
 		_name = name.ToLower();
@@ -314,7 +339,10 @@ public class OTSound
 		_boolMessage(MessageType.Destroy);
 	}
 	
-	
+
+	/// <summary>
+	/// Clones a sound
+	/// </summary>
 	OTSound Clone()
 	{
 		OTSound s = new OTSound(_name);
@@ -368,9 +396,10 @@ public class OTSound
 	/// <summary>
 	/// Sets this sound in idle state
 	/// </summary>
-	public void Idle()
+	public OTSound Idle()
 	{
 		_boolMessage(MessageType.Destroy);
+		return this;
 	}
 	
 	/// <summary>

@@ -22,7 +22,7 @@ public class OTShape: OTObject {
 	/// Line = the (out) Line for this mesh is created
 	/// Fill = the mesh is a solid created shape
 	/// </remarks>
-	public enum MeshMode { None, Line };
+	public enum MeshMode { None, Line } //, Fill, FilledOutline };
 			
 	// --------------------------------------------------------
 	// public attributes (editor)
@@ -388,4 +388,13 @@ public class OTShape: OTObject {
     }
 
 
+}
+
+
+class OTTriangulator
+{
+	public static int[] Triangulate(OTShape shape)
+	{
+		return new int[]{};
+	}
 }

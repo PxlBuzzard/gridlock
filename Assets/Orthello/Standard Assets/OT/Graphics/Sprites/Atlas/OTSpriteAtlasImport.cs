@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using System.Xml;
 using System.IO;
 
 /// <summary>
@@ -92,12 +91,16 @@ public class OTSpriteAtlasImport : OTSpriteAtlas
     protected virtual OTAtlasData[] Import()
     {
         return new OTAtlasData[] { };
-    }
-
-    
-    new protected void Update()
+    }		
+	
+    protected override void Update()
     {
-        if (_atlasDataFile_!=atlasDataFile || reloadData || (atlasDataFile!=null && bytesDataFile!=atlasDataFile.bytes.Length))
+		
+		bool atlasChanged = false;
+		if (!Application.isPlaying)
+			atlasChanged = (_atlasDataFile_!=atlasDataFile || (atlasDataFile!=null && bytesDataFile!=atlasDataFile.bytes.Length));
+		
+        if (reloadData || atlasChanged)
         {
 			
 			if (atlasDataFile!=null)
@@ -121,6 +124,9 @@ public class OTSpriteAtlasImport : OTSpriteAtlas
 			
             if (reloadData)
                 reloadData = false;
+			
+			Reset(false);
+			
 #if UNITY_EDITOR
 			if (!Application.isPlaying)
 				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);

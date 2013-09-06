@@ -18,6 +18,7 @@ public class OTContainer : MonoBehaviour
     /// </summary>
     public Texture texture;
 	public OTContainerSizeTexture[] sizeTextures;
+	public bool generateSprites = false;
 	        		
     protected bool dirtyContainer = true;    
     protected string _name_ = "";	
@@ -25,19 +26,23 @@ public class OTContainer : MonoBehaviour
     Vector2 _sheetSize_ = Vector2.zero;
 	protected Texture _texture = null;
 	
-	
 
     /// <summary>
-    /// Original sheet size
+    /// Sheets/Atlas's original image size
     /// </summary>
     /// <remarks>
-    /// This setting is optional and only used in combination with frameSize when
-    /// the frames do not exactly fill up the texture horizontally and/or vertically.
+    /// <b>When using a sprite sheet</b><br></br>
+    /// This setting is used in combination with frameSize when the frames do not exactly fill up the texture horizontally and/or vertically.
     /// <br></br><br></br>
     /// Sometimes a sheet has some left over space to the right or bottom of the
     /// texture that was used. By setting the original sheetSize and the frameSize, 
     /// the empty left-over space can be calculated and taken into account when
     /// setting the texture scaling and frame texture offsetting.
+    /// <br></br><br></br>
+    /// <b>When using an atlas</b><br></br>
+    /// Because the atlas data file does not have info about the atlas texture's original size, the uv mapping can be off
+    /// if the by Unity3D imported dimensions are not equal to the original. When you set this size to the original dimensions
+    /// Orthello will always know how to uv-map correctly.
     /// </remarks>
     public Vector2 sheetSize
     {
@@ -144,26 +149,38 @@ public class OTContainer : MonoBehaviour
         return texture;
     }
 	
-	
-	Texture _defaultTexture;
-	void CheckSizeFactor()
+	public void SetTexture(Texture tex)
 	{
-		if (OT.sizeFactor!=1)
+		texture = tex;
+		Reset(true);
+	}	
+		
+	Texture _defaultTexture;
+	void CheckResolutionData()
+	{
+		if (_defaultTexture==null)
+			_defaultTexture = texture;
+		if (OT.textureResourceFolder!="")
 		{
-			for (int i=0; i<sizeTextures.Length; i++)
-			{
-				if (sizeTextures[i].sizeFactor == OT.sizeFactor)
-				{
-					if (_defaultTexture==null)
-						_defaultTexture = texture;
-					texture = sizeTextures[i].texture;
-				}
-			}
-		}
+			Texture2D tex = OTHelper.ResourceTexture(OT.textureResourceFolder+'/'+_defaultTexture.name);
+			if (tex!=null)
+				texture = tex;
+		}						
 		else
 		{
-			if (_defaultTexture!=null)
-				texture = _defaultTexture;
+			if (OT.sizeFactor!=1)
+			{
+				for (int i=0; i<sizeTextures.Length; i++)
+				{
+					if (sizeTextures[i].sizeFactor == OT.sizeFactor)
+						texture = sizeTextures[i].texture;
+				}
+			}
+			else
+			{
+				if (_defaultTexture!=null)
+					texture = _defaultTexture;
+			}
 		}
 	}
 
@@ -182,40 +199,73 @@ public class OTContainer : MonoBehaviour
     public virtual int GetFrameIndex(string inName)
     {
 		Frame frame = FrameByName(inName);
-		if (frame.name==inName)
+		if (frame.name==inName || frame.name==inName.ToLower())
 			return frame.index;
 		else
 			return -1;		
     }
+
+	void CleanContainer()
+	{
+        frames = GetFrames();
+		frameByName.Clear();
+		for (int f=0; f<frames.Length; f++)
+		{
+			frames[f].index = f;			
+			if (!frameByName.ContainsKey(frames[f].name))
+				frameByName.Add(frames[f].name,frames[f]);
+		}
+		
+		// remove all cached materials for this container
+		OT.ClearMaterials("spc:"+name.ToLower()+":");
+		List<OTSprite> sprites = OT.ContainerSprites(this);
+		for (int s=0; s<sprites.Count; s++)
+			sprites[s].GetMat();
+		
+		if (Application.isPlaying)
+			CheckResolutionData();						
+		
+        dirtyContainer = false;		
+	}
 	
-	
-	protected void Awake()
-	{		
+	protected void CheckModifications()
+	{
 #if UNITY_EDITOR
 		if (!Application.isPlaying)
-			UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);
-#endif				
+		{
+			
+				UnityEditor.PropertyModification[] modifications = UnityEditor.PrefabUtility.GetPropertyModifications(this);
+				if (modifications!=null && modifications.Length>0)
+					UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);						
+		}
+#endif
+	}
+				
+	protected void Awake()
+	{	
+        if (_name == "")
+            _name = "Container (id=" + this.gameObject.GetInstanceID() + ")";
+		
+        _name_ = name;
+        _sheetSize_ = sheetSize;
+		_texture = texture;
+				
+        if (!registered || !Application.isPlaying)
+            RegisterContainer();				
+		
+		CleanContainer();
+		CheckModifications();		
 	}
 
     // Use this for initialization
     
     protected void Start()
-    {
+    {		
+		if (gameObject.name!=name)
+			gameObject.name = name;
 		
-        // initialize attributes
-        // initialize attributes
-        _name_ = name;
-        _sheetSize_ = sheetSize;
-		_texture = texture;
-		
-        if (name == "")
-		{
-            name = "Container (id=" + this.gameObject.GetInstanceID() + ")";
-#if UNITY_EDITOR
-			if (!Application.isPlaying)
-				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);
-#endif										
-		}		
+        if (dirtyContainer || !isReady)
+			CleanContainer();
     }
 
     /// <summary>
@@ -236,7 +286,7 @@ public class OTContainer : MonoBehaviour
             return frames[index];
         else
         {
-            throw new System.IndexOutOfRangeException("Frame index out of bounds ["+index+"]");
+            return frames[0];
         }
     }
 	
@@ -260,10 +310,7 @@ public class OTContainer : MonoBehaviour
             name = gameObject.name;
             OT.RegisterContainerLookup(this, _name_);
             _name_ = name;
- #if UNITY_EDITOR
-			if (!Application.isPlaying)
-				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);
-#endif		
+			CheckModifications();		
        }
     }	
 		
@@ -278,19 +325,56 @@ public class OTContainer : MonoBehaviour
 			return frameByName[frameName+".gif"];
 		if (frameByName.ContainsKey(frameName+".jpg"))
 			return frameByName[frameName+".jpg"];
+		
+		frameName = frameName.ToLower();
+		if (frameByName.ContainsKey(frameName))
+			return frameByName[frameName];
+		if (frameByName.ContainsKey(frameName+".png"))
+			return frameByName[frameName+".png"];
+		if (frameByName.ContainsKey(frameName+".gif"))
+			return frameByName[frameName+".gif"];
+		if (frameByName.ContainsKey(frameName+".jpg"))
+			return frameByName[frameName+".jpg"];
 		return new Frame();
+	}
+	
+	/// <summary>
+	/// Generates sprites for all frames in this container
+	/// </summary>
+	/// <remarks>
+	/// An empty game object will be created at 0,0,0 with a localscale of 1,1,1 that will hold
+	/// all sprites. The sprites will be named according to their frame names.
+	/// </remarks>
+	public void GenerateSprites()
+	{
+		generateSprites = false;
+		GameObject root = new GameObject(name);
+		root.transform.position = Vector3.zero;
+		root.transform.localScale = Vector3.one;
+		root.transform.rotation = Quaternion.identity;
+			
+		for (int i=0; i<frames.Length; i++)
+		{
+			OTSprite sprite = OT.CreateSprite(OTObjectType.Sprite);
+			sprite.spriteContainer = this;
+			sprite.name = frames[i].name;
+			sprite.frameIndex = i;
+			sprite.ForceUpdate();
+			sprite.ChildOf(root);			
+		}
 	}
 	
 	
     // Update is called once per frame
     
-    protected void Update()
+    protected virtual void Update()
     {		
-        if (!OT.isValid) return;
+        if (!OT.isValid) return;		
+		
 
-        if (!registered || !Application.isPlaying)
-            RegisterContainer();
-
+		if (!registered || !Application.isPlaying)
+			RegisterContainer();
+		
         if (frames.Length == 0 && !dirtyContainer)
             dirtyContainer = true;
 			
@@ -307,27 +391,13 @@ public class OTContainer : MonoBehaviour
 		}		
 				
         if (dirtyContainer || !isReady)
-        {
-            frames = GetFrames();
-			frameByName.Clear();
-			for (int f=0; f<frames.Length; f++)
-			{
-				frames[f].index = f;			
-				if (!frameByName.ContainsKey(frames[f].name))
-					frameByName.Add(frames[f].name,frames[f]);
-			}
-			
-			// remove all cached materials for this container
-			OT.ClearMaterials("spc:"+name.ToLower()+":");
-			List<OTSprite> sprites = OT.ContainerSprites(this);
-			for (int s=0; s<sprites.Count; s++)
-				sprites[s].GetMat();
-			
-			if (Application.isPlaying)
-				CheckSizeFactor();			
-			
-            dirtyContainer = false;
-        }
+			CleanContainer();
+		
+		if (isReady && generateSprites && !Application.isPlaying)
+		{
+			GenerateSprites();		
+			CheckModifications();
+		}
     }
 
     void OnDestroy()
@@ -336,10 +406,22 @@ public class OTContainer : MonoBehaviour
             OT.RemoveContainer(this);
     }
 	
-	public virtual void Reset()
+	public virtual void Reset(bool doUpdate)
 	{
 		dirtyContainer = true;
-		Update();
+				
+		OTObject[] sprites = OT.ObjectsOfType<OTSprite>();
+		for (int i=0; i<sprites.Length; i++)
+			sprites[i].Reset();		
+		
+		if (doUpdate)
+			Update();
+		
+	}
+	
+	public virtual void Reset()
+	{
+		Reset(true);
 	}
 
 }

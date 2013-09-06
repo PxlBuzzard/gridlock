@@ -1,7 +1,16 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
- 
+
+/// <summary>
+/// <b><a href="http://www.wyrmtale.com/products/unity3d-components/orthello-pro" target="_blank" >PRO</a></b> 
+/// : Simple tile based sprite
+/// </summary>
+/// <remarks>
+/// This sprite is basicly a matrix of tiles (frameIndexes) from an atlas or spritesheet
+/// It can be filled randomly, manually or from an OTTilemap. regular use would be to show 
+/// the on screen portion of a tile based game world.
+/// </remarks>
 public class OTTilesSprite : OTSprite
 {
 	
@@ -28,6 +37,9 @@ public class OTTilesSprite : OTSprite
 		}		
 	}
 	
+	/// <summary>
+	/// Gets the tile that was hit - based on the OTObject.hitPoint
+	/// </summary>
 	public IVector2 hitTile
 	{
 		get
@@ -191,6 +203,9 @@ public class OTTilesSprite : OTSprite
 	public void Scroll(IVector2 d, bool keepTiles)
 	{
 		if (d.Equals(IVector2.zero))
+			return;
+		
+		if (mesh == null)
 			return;
 		
 		Color[] colors = mesh.colors;
@@ -655,6 +670,9 @@ public class OTTilesSprite : OTSprite
 	public void Repaint(IVector2[] tiles)
 	{
 		if (spriteContainer==null || !spriteContainer.isReady)
+			return;
+		
+		if (mesh == null) 
 			return;
 		
 		Vector2[] _uv = mesh.uv;

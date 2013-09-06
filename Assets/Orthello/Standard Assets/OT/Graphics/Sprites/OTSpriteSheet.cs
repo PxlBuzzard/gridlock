@@ -128,7 +128,7 @@ public class OTSpriteSheet : OTContainer
     }
 
     
-    new protected void Update()
+    protected override void Update()
     {
         if (!Vector2.Equals(_framesXY, _framesXY_))
         {

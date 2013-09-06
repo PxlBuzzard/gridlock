@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.IO;
 using System;
-using System.Xml;
 
 /// <summary>
 /// <b><a href="http://www.wyrmtale.com/products/unity3d-components/orthello-pro" target="_blank" >PRO</a></b> 
@@ -53,7 +52,7 @@ public class OTTileMap : OTObject
 	/// be set to the value 'collider' (creates a static rigid body collider) or 'trigger' (creates
 	/// a trigger collider). 
 	/// </remarks>
-	public bool generateColliders = true;
+	public bool generateColliders = false;
 	/// <summary>
 	/// Reduces bleeding.
 	/// <remarks>
@@ -64,6 +63,8 @@ public class OTTileMap : OTObject
 	/// </remarks>
 	/// </summary>
 	public bool reduceBleeding = true;
+	
+	public int bleedingAmount = 20;
     
     [HideInInspector]
     public OTTileSet[] tileSets = new OTTileSet[] { };
@@ -113,8 +114,7 @@ public class OTTileMap : OTObject
     //-----------------------------------------------------------------------------
     // class methods
     //-----------------------------------------------------------------------------
-
-    
+	    
     protected override void Awake()
     {
         base.Awake();
@@ -132,25 +132,26 @@ public class OTTileMap : OTObject
 
     Vector3[] GetVertices(OTTileSet ts, OTTileMapLayer layer, Vector2 pos)
     {
+		
+		
         Vector2 _meshsize_ = new Vector2(1.0f/mapSize.x, 1.0f/mapSize.y);
         Vector2 _pivotPoint = new Vector2((pos.x-1) * _meshsize_.x * -1 - _meshsize_.x / 2, (pos.y-1) * _meshsize_.y + _meshsize_.y / 2); 
-		
         // Vector2 _pivotPoint = new Vector2((pos.x-1) * _meshsize_.x * -1, (pos.y-1) * _meshsize_.y);
         _pivotPoint.x += .5f;
         _pivotPoint.y -= .5f;
 
         float dx = (ts.tileSize.x / mapTileSize.x) - 1;
         float dy = (ts.tileSize.y / mapTileSize.y) - 1;
-		
-		Vector2 _offset = new Vector2((layer.offsetX / mapTileSize.x) * _meshsize_.x, -1 * layer.offsetY / mapTileSize.y * _meshsize_.y);
-		
+
         return new Vector3[] { 
-                new Vector3(((_meshsize_.x/2) * -1) - _pivotPoint.x + _offset.x, (_meshsize_.y/2) - _pivotPoint.y + (dy * _meshsize_.y) + _offset.y, layer.depth),
-                new Vector3((_meshsize_.x/2) - _pivotPoint.x + (dx * _meshsize_.x) + _offset.x, (_meshsize_.y/2) - _pivotPoint.y + (dy * _meshsize_.y) + _offset.y, layer.depth),
-                new Vector3((_meshsize_.x/2) - _pivotPoint.x + (dx * _meshsize_.x) + _offset.x, ((_meshsize_.y/2) * -1) - _pivotPoint.y + _offset.y, layer.depth),
-                new Vector3(((_meshsize_.x/2) * -1) - _pivotPoint.x + _offset.x, ((_meshsize_.y/2) * -1) - _pivotPoint.y + _offset.y, layer.depth)
+                new Vector3(((_meshsize_.x/2) * -1) - _pivotPoint.x, (_meshsize_.y/2) - _pivotPoint.y + (dy * _meshsize_.y), layer.depth),
+                new Vector3((_meshsize_.x/2) - _pivotPoint.x + (dx * _meshsize_.x), (_meshsize_.y/2) - _pivotPoint.y + (dy * _meshsize_.y), layer.depth),
+                new Vector3((_meshsize_.x/2) - _pivotPoint.x + (dx * _meshsize_.x), ((_meshsize_.y/2) * -1) - _pivotPoint.y, layer.depth),
+                new Vector3(((_meshsize_.x/2) * -1) - _pivotPoint.x, ((_meshsize_.y/2) * -1) - _pivotPoint.y, layer.depth)
             };
     }
+	
+	
 
     int[] GetTriangles(int idx)
     {
@@ -193,6 +194,98 @@ public class OTTileMap : OTObject
             new Vector2(utx + dx,1 - uty - dy ), new Vector2(utx + usx - dx,1 - uty - dy), 
             new Vector2(utx + usx - dx ,1- uty - usy + dy), new Vector2(utx + dx,1 - uty - usy + dy) 
         };
+    }
+	
+	// NOTE: added by VeTaL
+	Vector2[] GetUV(int tile, int tiledRotation)
+    {
+        OTTileSet ts = tileSetLookup[tile];
+
+        int ty = (int)Mathf.Floor((float)(tile-ts.firstGid) / ts.tilesXY.x);
+        int tx = (tile-ts.firstGid+1) - (int)((float)ty * ts.tilesXY.x) - 1;
+				
+        float ux = (1f / ts.imageSize.x);
+        float uy = (1f / ts.imageSize.y);
+        float usx = ux *  ts.tileSize.x;
+        float usy = uy *  ts.tileSize.y;
+		
+        // float utx = (ux * tx);
+        float utx = (ux * ts.margin)+(tx * usx);
+		if (tx>0)utx+=(tx * ts.spacing * ux);
+		
+        float uty = (uy * ts.margin)+(ty * usy);
+		if (ty>0)uty+=(ty * ts.spacing * uy);
+		
+		// create a tiny fraction (uv size / 25 )
+		// that will be removed from the UV coords
+		// to reduce bleeding.
+		float dx = 0; 
+		float dy = 0;
+		
+		if (reduceBleeding)
+		{
+			int dv = bleedingAmount;
+			dx = usx / dv;
+			dy = usy / dv;
+		}
+		
+		Vector2 vec1 = new Vector2(utx + dx,1 - uty - dy); 				// Left top
+		Vector2 vec2 = new Vector2(utx + usx - dx,1 - uty - dy); 		// Right top
+		Vector2 vec3 = new Vector2(utx + usx - dx ,1- uty - usy + dy); 	// Right bottom
+		Vector2 vec4 = new Vector2(utx + dx,1 - uty - usy + dy); 		// Left bottom
+		
+		//Debug.Log(tile + " is the " + tiledRotation);
+		
+		switch (tiledRotation) 
+		{
+		case 0:
+			//Debug.Log(vec1 + " " + vec2 + " " + vec3 + " " + vec4 + " ");
+			return new Vector2[] { 
+	            vec1, vec2, vec3, vec4
+	        };
+			
+		case 1:
+			return new Vector2[] { 
+	            vec1, vec4, vec3, vec2
+	        };
+			
+		case 2:
+			return new Vector2[] { 
+	            vec4, vec3, vec2, vec1
+	        };
+		
+		case 3:
+			return new Vector2[] { 
+	            vec2, vec3, vec4, vec1
+	        };	
+				
+		case 4:
+			return new Vector2[] { 	            
+				vec2, vec1, vec4, vec3
+	        };
+			
+		case 5:
+			return new Vector2[] { 	            
+				vec4, vec1, vec2, vec3
+	        };
+			
+		case 6:
+			return new Vector2[] { 
+	            vec3, vec4, vec1, vec2
+	        };
+			
+		case 7:
+			return new Vector2[] { 
+	            vec3, vec2, vec1, vec4
+	        };
+		/* */
+		default:
+			return new Vector2[] { 
+	            vec1, vec2, vec3, vec4 
+	        };
+		}
+      
+		
     }
 
 
@@ -258,7 +351,9 @@ public class OTTileMap : OTObject
 	                        idx += 4;
 	                        triangles.AddRange(tri);
 	                        subTriangles.AddRange(tri);
-	                        uv.AddRange(GetUV(tile));
+							
+							var range = GetUV(tile, layer.rotation[t]);
+	                        uv.AddRange(range);
 						}
                     }
                     px += 1;
@@ -391,25 +486,20 @@ public class OTTileMap : OTObject
 		return "translate(@"+propName+", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')";
 	}
 	
-	string TileProp(XmlNode tileNode, string propName)
-	{
-		
-		
-		XmlNode propNode = tileNode.SelectSingleNode("properties/property["+XPathLower("name")+"='"+propName.ToLower()+"']");
-		if (propNode!=null)
-			return AtS(propNode,"value");
+	string TileProp(object tileElement, string propName)
+	{					
+		object el = xml.FindProp(tileElement,"properties/property","name", propName);
+		if (el!=null)
+			return xml.Value(el);
 		else
 			return "";
 	}
 
-    string AtS(XmlNode n, string attrib)
+    string AtS(object n, string attrib)
     {
         try
         {
-            XmlAttribute a = n.Attributes[attrib];
-            if (a != null && a.Value!=null)
-                return a.Value;
-
+			return xml.Attr(n, attrib);
         }
         catch (System.Exception)
         {
@@ -418,11 +508,35 @@ public class OTTileMap : OTObject
         return "";       
     }
 
-    int AtI(XmlNode n, string attrib)
+    int AtI(object n, string attrib)
     {
         try
         {
-            return Convert.ToInt32(AtS(n, attrib));
+            return Convert.ToInt32(xml.Attr(n, attrib));
+        }
+        catch (System.Exception)
+        {
+            return 0;
+        }
+    }
+	
+	int AtIorNegative(object n, string attrib) // NOTE: added by VeTaL
+    {
+        try
+        {
+            return Convert.ToInt32(xml.Attr(n, attrib));
+        }
+        catch (System.Exception)
+        {
+            return -1;
+        }
+    }
+	
+	uint AtU(object n, string attrib) // NOTE: added by VeTaL
+    {
+        try
+        {
+            return Convert.ToUInt32(xml.Attr(n, attrib));
         }
         catch (System.Exception)
         {
@@ -430,37 +544,31 @@ public class OTTileMap : OTObject
         }
     }
 
-    bool HasProp(XmlNodeList props, string propName)
+    bool HasProp(OTDataset dsProps, string propName)
     {
-        for (int i = 0; i < props.Count; i++)
-        {
-            try
-            {
-                if (props[i].Attributes["name"].Value == propName)
-                    return true;
-            }
-            catch (System.Exception)
-            {
-            }
-        }
+		dsProps.First();
+		while (!dsProps.EOF)
+		{
+			if (dsProps.AsString("name") == propName)
+				return true;
+			dsProps.Next();
+		}
         return false;
     }
-    string GetPropS(XmlNodeList props, string propName)
+	
+    string GetPropS(OTDataset props, string propName)
     {
-        for (int i = 0; i < props.Count; i++)
-        {
-            try
-            {
-                if (props[i].Attributes["name"].Value == propName)
-                    return props[i].Attributes["value"].Value;
-            }
-            catch (System.Exception)
-            {
-            }
-        }
-        return "";
+		props.First();
+		while (!props.EOF)
+		{
+			if (props.AsString("name") == propName)
+				return xml.Value(props);
+			props.Next();
+		}
+		return "";
     }
-    int GetPropI(XmlNodeList props, string propName)
+	
+    int GetPropI(OTDataset props, string propName)
     {
         string sv = GetPropS(props, propName);
         if (sv != "")
@@ -468,12 +576,13 @@ public class OTTileMap : OTObject
         else
             return 0;
     }
-
+	
+	OTXMLDataReader xml = null;	
     void LoadTileMap()
     {
 		RemoveColliders();
-		List <OTTile>allTiles = new List<OTTile>();
-		Dictionary<int , OTTile>lookupTile = new Dictionary<int, OTTile>();
+		List<OTTile> allTiles = new List<OTTile>();
+		Dictionary<int, OTTile> lookupTile = new Dictionary<int, OTTile>();
 		
         if (tileMapXML == null)
         {
@@ -481,42 +590,38 @@ public class OTTileMap : OTObject
                 tileSets = new OTTileSet[] { };
             return;
         }
-
-        XmlDocument xd = new XmlDocument();
-        try
-        {
-            xd.LoadXml(tileMapXML.text);
+		
+		xml = new OTXMLDataReader(name, tileMapXML.text);
+		if (!xml.Open())
+		{
+            Debug.LogError("TileMap XML - invalid XML!");
+            return;
         }
-        catch(System.Exception)
+
+        if (xml.rootName == "")
         {
             Debug.LogError("TileMap XML - invalid XML!");
             return;
         }
 
-        if (xd.DocumentElement == null)
-        {
-            Debug.LogError("TileMap XML - invalid XML!");
-            return;
-        }
-
-        if (xd.DocumentElement.Name != "map")
+        if (xml.rootName != "map")
         {
             Debug.LogError("TileMap XML - No Tiled Tilemap found!");
             return;
         }
 
-        mapSize = new Vector2(AtI(xd.DocumentElement, "width"), AtI(xd.DocumentElement, "height"));
-        mapTileSize = new Vector2(AtI(xd.DocumentElement, "tilewidth"), AtI(xd.DocumentElement, "tileheight"));
-
-        XmlNodeList xmlTileSets = xd.DocumentElement.SelectNodes("tileset");
-        if (xmlTileSets.Count == 0)
+        mapSize = new Vector2(AtI(xml.rootElement, "width"), AtI(xml.rootElement, "height"));
+        mapTileSize = new Vector2(AtI(xml.rootElement, "tilewidth"), AtI(xml.rootElement, "tileheight"));
+		
+		OTDataset xmlTileSets = xml.Dataset("tileset");
+        if (xmlTileSets.rowCount == 0)
         {
             Debug.LogError("TileMap XML - No Tilesets found!");
             return;
         }
 
-        XmlNodeList xmlLayers = xd.DocumentElement.SelectNodes("layer");
-        if (xmlLayers.Count == 0)
+        OTDataset xmlLayers = xml.Dataset("layer");
+        if (xmlLayers.rowCount == 0)
         {
             Debug.LogError("TileMap XML - No Layers found!");
             return;
@@ -526,48 +631,50 @@ public class OTTileMap : OTObject
             tileSets = new OTTileSet[] { };
 
         tileSetLookup.Clear();
-        System.Array.Resize<OTTileSet>(ref tileSets, xmlTileSets.Count);
-        for (int i = 0; i < xmlTileSets.Count; i++)
-        {
+        System.Array.Resize<OTTileSet>(ref tileSets, xmlTileSets.rowCount);
+		while (!xmlTileSets.EOF)
+		{
+			int i = xmlTileSets.row;
             if (tileSets[i] == null) 
                 tileSets[i] = new OTTileSet();
 
-            OTTileSet ts = tileSets[i];
-            XmlNode n = xmlTileSets[i];
-            ts.name = AtS(n, "name");
-            ts.firstGid = AtI(n, "firstgid");
-            ts.margin = AtI(n, "margin");
-            ts.spacing = AtI(n, "spacing");
-            ts.tileSize = new Vector2(AtI(n, "tilewidth"), AtI(n, "tileheight"));
-
-            XmlNode im = n.SelectSingleNode("image");
-            string source = AtS(im, "source");
+            OTTileSet tileSet = tileSets[i];
+            tileSet.name = AtS(xmlTileSets, "name");
+            tileSet.firstGid = AtI(xmlTileSets, "firstgid");
+            tileSet.margin = AtI(xmlTileSets, "margin");
+            tileSet.spacing = AtI(xmlTileSets, "spacing");
+            tileSet.tileSize = new Vector2(AtI(xmlTileSets, "tilewidth"), AtI(xmlTileSets, "tileheight"));
+			
+            object imageNode = xml.Element(xmlTileSets,"image");
+            string source = AtS(imageNode, "source");
 
             if (tileSetImages.Length > 0)
             {
                 for (int ii = 0; ii < tileSetImages.Length; ii++)
                     if (source.IndexOf(tileSetImages[ii].name) >= 0)
-                        ts.image = tileSetImages[ii];
+                        tileSet.image = tileSetImages[ii];
             }
 
-            ts.imageSize = new Vector2(AtI(im, "width"), AtI(im, "height"));
-            ts.tilesXY = new Vector2(Mathf.Round((ts.imageSize.x-(ts.margin*2)) / (ts.tileSize.x+ts.spacing)), 
-				Mathf.Round((ts.imageSize.y-(ts.margin*2)) / (ts.tileSize.y+ts.spacing)));
-            int tileCount = (int)(ts.tilesXY.x * ts.tilesXY.y);
+            tileSet.imageSize = new Vector2(AtI(imageNode, "width"), AtI(imageNode, "height"));
+            tileSet.tilesXY = new Vector2(Mathf.Round((tileSet.imageSize.x-(tileSet.margin*2)) / (tileSet.tileSize.x+tileSet.spacing)), 
+				Mathf.Round((tileSet.imageSize.y-(tileSet.margin*2)) / (tileSet.tileSize.y+tileSet.spacing)));
+            int tileCount = (int)(tileSet.tilesXY.x * tileSet.tilesXY.y);
 			
-			int idx = 0;			
-            for (int ii = ts.firstGid; ii < ts.firstGid + tileCount; ii++)
+			int idx = 0;	
+			OTDataset dsTiles = xmlTileSets.Dataset("tile");
+            for (int j = tileSet.firstGid; j < tileSet.firstGid + tileCount; j++)
 			{
-				if (!tileSetLookup.ContainsKey(ii))
-                	tileSetLookup.Add(ii, ts);
+				if (!tileSetLookup.ContainsKey(j))
+                	tileSetLookup.Add(j, tileSet);
 
 				OTTile tile = new OTTile();
-				XmlNode tileNode = n.SelectSingleNode("tile[@id='"+idx+"']");
+				object tileNode = xml.Element(dsTiles,idx);
 				tile.index = idx++;											
 				if (tileNode!=null)
 				{
 					tile.collider = TileProp(tileNode,"collider");
 					tile.name = TileProp(tileNode,"name");
+					tile.material = TileProp(tileNode,"material");
 					tile.display = true;
 					string sDisplay = TileProp(tileNode,"display").ToLower();
 					if (sDisplay=="none" || sDisplay=="false" || sDisplay=="hidden" || sDisplay=="0")						
@@ -582,75 +689,96 @@ public class OTTileMap : OTObject
 					}
 					if (tile.height == 0) tile.height = (int)mapTileSize.x;
 					if (tile.height == 0) tile.height = 10;
-					tile.gid = ii;
-					if (tile.name=="") tile.name = "tileGUID"+ii;
+					tile.gid = j;
+					if (tile.name=="") tile.name = "tileGUID"+j;
 					allTiles.Add(tile);
-					lookupTile.Add(ii,tile);
+					lookupTile.Add(j,tile);
 				}				
-			}		
+			}
+			xmlTileSets.Next();
         }
 
         if (layers == null)
             layers = new OTTileMapLayer[] { };
 
-        System.Array.Resize<OTTileMapLayer>(ref layers, xmlLayers.Count);
-        for (int i = 0; i < xmlLayers.Count; i++)
-        {
+        System.Array.Resize<OTTileMapLayer>(ref layers, xmlLayers.rowCount);
+		while (!xmlLayers.EOF)
+        {			
+			int i = xmlLayers.row;
             if (layers[i] == null)
-                layers[i] = new OTTileMapLayer();
-
-            OTTileMapLayer l = layers[i];
-            XmlNode n = xmlLayers[i];
-            l.name = AtS(n, "name");
-            l.depth = 0 - i;
-            l.layerSize = new Vector2(AtI(n, "width"), AtI(n, "height"));
-            int tileCount = (int)(l.layerSize.x * l.layerSize.y);
-
-            if (l.tiles.Length!=tileCount)
-                System.Array.Resize<int>(ref l.tiles, tileCount);
-
+                layers[i] = new OTTileMapLayer();						
+						
+            OTTileMapLayer layer = layers[i];
+            layer.name = AtS(xmlLayers, "name");
+            layer.depth = 0 - i;
+            layer.layerSize = new Vector2(AtI(xmlLayers, "width"), AtI(xmlLayers, "height"));
+            int tileCount = (int)(layer.layerSize.x * layer.layerSize.y);
+			layer.included = true;
+			
+			//Debug.Log(layers[i].name + " is " + AtIorNegative(currentXmlLayer, "visible")); // NOTE: modified by VeTaL
+			if (AtIorNegative(xmlLayers, "visible") == 0) // Returns -1 if property is not set
+			{
+				layer.included = false;
+				continue;			
+			}
+			
+            if (layer.tiles.Length!=tileCount)			
+                System.Array.Resize<int>(ref layer.tiles, tileCount);					
+			
+			if (layer.rotation.Length!=tileCount)						// NOTE: modified by VeTaL	
+				System.Array.Resize<int>(ref layer.rotation, tileCount); 	
+			
+			
             try
             {
                 try
                 {
-                    XmlNodeList props = n.SelectSingleNode("properties").SelectNodes("property");
-                    if (HasProp(props, "depth"))
-                        l.depth = GetPropI(props, "depth");
-					if (HasProp(props, "offset-x"))
-						l.offsetX = GetPropI(props, "offset-x");
-					if (HasProp(props, "offset-x"))
-						l.offsetY = GetPropI(props, "offset-y");
+					OTDataset props = xmlLayers.Dataset("properties/property");
+                    if (HasProp(props, "Depth"))
+                        layer.depth = GetPropI(props, "Depth");
                 }
                 catch (System.Exception)
                 {
                 }
 
-                XmlNodeList tiles = n.SelectSingleNode("data").SelectNodes("tile");
-                if (tiles.Count != tileCount)
-                    Debug.LogWarning("TileMap XML - Invalid number of tiles " + tiles.Count+" on layer "+l.name+", size "+l.layerSize.x+" x "+l.layerSize.y+
-                    " , so expected "+tileCount+" tiles.");
-
-                for (int li = 0; li < tileCount; li++)
-                    l.tiles[li] = 0;
-
-                for (int li = 0; li < tiles.Count; li++)
+				OTDataset tiles = xmlLayers.Dataset("data/tile");
+                if (tiles.rowCount != tileCount)
+                    Debug.LogWarning("TileMap XML - Invalid number of tiles " + tiles.rowCount+" on layer "+layer.name+", size "+layer.layerSize.x+" x "+layer.layerSize.y+
+                    " , so expected "+tileCount+" tiles."); 
+				
+				while (!tiles.EOF)
 				{
-					int gid = AtI(tiles[li],"gid");
+					int j = tiles.row;
+					const int magicNum = 536870912; // magic number, quater of int. Dunno, why this one was chosen					
+					layer.tiles[j] = 1; 			// set to != 0
+										
+					uint ugid = AtU(tiles,"gid");
+					int gid = (int)(ugid % magicNum);			// Get gid by throwing away magicNum					
+					int rotation = (int)(ugid / magicNum);		// Get amount of magicNum's to define rotation
+									
+					// TOFIX: i have no idea, what lookupTile is for. Maybe its necessary, but it works without it. Needed your attention. 
+					layer.tiles[j] = gid;
+					layer.rotation[j] = rotation;
+					/*
 					if (lookupTile.ContainsKey(gid))
 					{
 						if (lookupTile[gid].display)
-                    		l.tiles[li] = AtI(tiles[li],"gid");
+                    		layer.tiles[j] = AtI(tiles[j],"gid");
 						else
-							l.tiles[li] = 0;
+							layer.tiles[j] = 0;
 					}
 					else					
-                    	l.tiles[li] = AtI(tiles[li],"gid");
+                    	layer.tiles[j] = AtIs(tiles[j],"gid");
+					/* */
+					tiles.Next();
 				}
+				
             }
             catch (System.Exception)
             {
-                Debug.LogError("TileMap XML - Could not load tiles from layer " + l.name);
+                Debug.LogError("TileMap XML - Could not load tiles from layer " + layer.name);
             }
+			xmlLayers.Next();
         }
 
         meshDirty = true;
@@ -676,17 +804,17 @@ public class OTTileMap : OTObject
 		int[] tiles = new int[] {};
         for (int i = 0; i < layers.Length; i++)
         {
-            OTTileMapLayer l = layers[i];
+            OTTileMapLayer layer = layers[i];
 			if (i==0)
 			{
-				tiles = l.tiles.Clone() as int[];
+				tiles = layer.tiles.Clone() as int[];
 				for (int t=0; t<tiles.Length; t++)
 					if (tiles[t]!=tile.gid) tiles[t] = 0;
 			}
 			else				
 			{
-				for (int t=0; t<l.tiles.Length; t++)
-					if (l.tiles[t]==tile.gid) tiles[t] = tile.gid;
+				for (int t=0; t<layer.tiles.Length; t++)
+					if (layer.tiles[t]==tile.gid) tiles[t] = tile.gid;
 			}								
 		}
 	
@@ -801,7 +929,14 @@ public class OTTileMap : OTObject
 					
 				go.transform.parent = tileColliders;								
 				BoxCollider box = go.AddComponent<BoxCollider>() as BoxCollider;
-				
+												
+				if (tile.material != "")
+				{
+					PhysicMaterial pm = Resources.Load(tile.material) as PhysicMaterial;
+					if (pm != null)
+						box.material = pm;
+				}
+
 				if (tile.collider.ToLower() == "collider")
 				{
 					Rigidbody rb = go.AddComponent<Rigidbody>() as Rigidbody;
@@ -843,28 +978,18 @@ public class OTTileMap : OTObject
         base.Start();
         _tileMapXML = tileMapXML;
         meshDirty = false;
-
         if (tileSets.Length > 0)
         {
-            for (int i = 0; i < tileSets.Length; i++)
-            {
-				//((int)(image height) / (int)tile height) = remainder)
-				//(image height) - remainder) / tile height = tiles down
-				//(image width / tile width = til
-				//(ts.tilesXY.x * ts.tilesXY.y - 1) + 1)
-				
-                OTTileSet ts = tileSets[i];
-				
-                int tileCount = (int)(ts.tilesXY.x * ts.tilesXY.y);
-                for (int ii = ts.firstGid; ii < ts.firstGid + tileCount; ii++)
-				{
-                    tileSetLookup.Add(ii, ts);
-				}
-            }
-        }
-
-
+			for (int i = 0; i < tileSets.Length; i++)
+			{
+				OTTileSet ts = tileSets[i];
+				int tileCount = (int)(ts.tilesXY.x * ts.tilesXY.y);                
+				for (int ii = ts.firstGid; ii < ts.firstGid + tileCount; ii++)
+					tileSetLookup.Add(ii, ts);
+			}    		
+		}
     }
+	
     // Update is called once per frame
     new void Update()
     {		
@@ -906,6 +1031,7 @@ public class OTTileMap : OTObject
 	/// </summary>
     public void Reload()
     {
+		reload = true;
         LoadTileMap();
         base.Update();
     }
@@ -924,7 +1050,9 @@ public class OTTile
 
     public int height;
 
-    public string name;
+    public string name;	
+	
+	public string material;
 }
 
 
@@ -1003,10 +1131,8 @@ public class OTTileMapLayer
 	/// <summary>
 	/// This layer will be included when true (default)
 	/// </summary>
-    public bool included = true;  
-	/// <summary>
-	/// This layers offset distance
-	/// </summary>
-	public float offsetX;
-	public float offsetY;
+    public bool included = true;    
+	
+	// NOTE: added by VeTaL
+	public int[] rotation = new int[] { };
 }

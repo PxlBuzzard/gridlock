@@ -289,7 +289,23 @@ public class OTAnimatingSprite : OTSprite
     OTAnimationFrameset frameset = null;
     float frDuration;
     int frCount;
-
+	
+	
+	public override void PassiveUpdate()
+	{
+		base.PassiveUpdate();
+		if (isPlaying)
+			Update();
+	}
+	
+	protected new void Awake()
+	{
+		passiveControl = true;
+		if (GetComponent<OTAnimatingSpritePassive>()!=null)
+			DestroyImmediate(GetComponent<OTAnimatingSpritePassive>());
+		base.Awake();
+	}
+	
     //-----------------------------------------------------------------------------
     // public methods
     //-----------------------------------------------------------------------------
@@ -317,11 +333,21 @@ public class OTAnimatingSprite : OTSprite
     public void Play(string frameSet)
     {
         this.animationFrameset = frameSet;
+        Play();
+    }
+
+    /// <summary>
+    /// Plays the animation once
+    /// </summary>
+    public void PlayOnce()
+    {
+        this.looping = false;
         this.startFrame = -1;
         this.endFrame = -1;
         this.delay = 0;
         _Play();
     }
+		
     /// <summary>
     /// Plays a frameset of this sprite's animation once.
     /// </summary>
@@ -329,81 +355,47 @@ public class OTAnimatingSprite : OTSprite
     public void PlayOnce(string frameSet)
     {
         this.animationFrameset = frameSet;
-        this.looping = false;
+        PlayOnce();
+    }
+	
+	
+    /// <summary>
+    /// Plays this animation looping
+    /// </summary>
+    public void PlayLoop()
+    {
+        this.looping = true;
         this.startFrame = -1;
         this.endFrame = -1;
         this.delay = 0;
         _Play();
     }
+		
     /// <summary>
     /// Plays a frameset of this sprite's animation looping.
     /// </summary>
     /// <param name="frameSet">Animation frameset to play.</param>
     public void PlayLoop(string frameSet)
     {
-        if (this.animationFrameset != frameSet || !_playing)
-        {
-            this.animationFrameset = frameSet;
-            this.looping = true;
-            this.startFrame = -1;
-            this.endFrame = -1;
-            this.delay = 0;
-            _Play();
-        }
+		if (!isPlaying || (isPlaying && animationFrameset!=frameSet))
+		{
+        	this.animationFrameset = frameSet;
+			PlayLoop();
+		}
     }
-    /// <summary>
-    /// Plays a specific animation.
-    /// </summary>
-    /// <param name="animation">Animation to play.</param>
-    public void Play(OTAnimation animation)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = "";
-            Play();
-        }
-    }
-    /// <summary>
-    /// Plays a specific animation's frameSet.
-    /// </summary>
-    /// <param name="animation">Animation to play a frameset from.</param>
-    /// <param name="frameSet">Animation framset to play.</param>
-    public void Play(OTAnimation animation, string frameSet)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = frameSet;
-            Play();
-        }
-    }
+    
     /// <summary>
     /// Plays this sprite's animation from a start frame.
     /// </summary>
     /// <param name="startFrame">Animation frame number where to start.</param>
     public void Play(int startFrame)
     {
-        this.animationFrameset = "";
         this.startFrame = startFrame;
         this.endFrame = -1;
         this.delay = 0;
         _Play();
     }
-    /// <summary>
-    /// Plays a specific animation from a start frame.
-    /// </summary>
-    /// <param name="animation">Animation to play.</param>
-    /// <param name="startFrame">Animation frame number where to start.</param>
-    public void Play(OTAnimation animation, int startFrame)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = "";
-            Play(startFrame);
-        }
-    }
+	
     /// <summary>
     /// Plays this sprite's animation from a start frame, starting after a delay.
     /// </summary>
@@ -412,25 +404,9 @@ public class OTAnimatingSprite : OTSprite
     public void Play(int startFrame, float delay)
     {
         this.startFrame = startFrame;
-        this.animationFrameset = "";
         this.endFrame = -1;
         this.delay = delay;
         _Play();
-    }
-    /// <summary>
-    /// Plays a specific animation from a start frame, starting after a delay.
-    /// </summary>
-    /// <param name="animation">Animation to play.</param>
-    /// <param name="startFrame">Animation frame number where to start.</param>
-    /// <param name="delay">After this delay in seconds the animation will be started.</param>
-    public void Play(OTAnimation animation, int startFrame, float delay)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = "";
-            Play(startFrame, delay);
-        }
     }
     /// <summary>
     /// Plays this sprite's animation partly from a start frame to an end frame, starting after a delay.
@@ -443,7 +419,6 @@ public class OTAnimatingSprite : OTSprite
         if (startFrame <= endFrame)
         {
             this.startFrame = startFrame;
-            this.animationFrameset = "";
             this.endFrame = endFrame;
             this.delay = delay;
             _Play();
@@ -451,29 +426,11 @@ public class OTAnimatingSprite : OTSprite
         else
         {
             this.endFrame = startFrame;
-            this.animationFrameset = "";
             this.startFrame = endFrame;
             this.delay = delay;
             _PlayBackward();
         }
     }
-    /// <summary>
-    /// Plays a specific animation partly from a start frame to an end frame, starting after a delay.
-    /// </summary>
-    /// <param name="animation">Animation to play.</param>
-    /// <param name="startFrame">Animation frame number where to start.</param>
-    /// <param name="endFrame">Animation frame number where to end.</param>
-    /// <param name="delay">After this delay in seconds the animation will be started.</param>
-    public void Play(OTAnimation animation, int startFrame, int endFrame, float delay)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = "";
-            Play(startFrame, endFrame, delay);
-        }
-    }
-
 
     /// <summary>
     /// Plays this sprite's animation backward.
@@ -482,7 +439,6 @@ public class OTAnimatingSprite : OTSprite
     {
         this.startFrame = -1;
         this.endFrame = -1;
-        this.animationFrameset = "";
         _PlayBackward();
     }
     /// <summary>
@@ -491,62 +447,53 @@ public class OTAnimatingSprite : OTSprite
     /// <param name="frameSet">Animation frameset to play.</param>
     public void PlayBackward(string frameSet)
     {
+        this.animationFrameset = frameSet;
+        PlayBackward();
+    }
+
+    /// <summary>
+    /// Plays this animation once backward
+    /// </summary>
+    public void PlayOnceBackward()
+    {
         this.startFrame = -1;
         this.endFrame = -1;
-        this.animationFrameset = frameSet;
+        this.looping = false;
         _PlayBackward();
     }
+	
+	
     /// <summary>
     /// Plays this a frameset of this sprite's animation backward once.
     /// </summary>
     /// <param name="frameSet">Animation frameset to play.</param>
     public void PlayOnceBackward(string frameSet)
     {
+        this.animationFrameset = frameSet;
+        PlayOnceBackward();
+    }
+
+    /// <summary>
+    /// Plays this animation looping backward
+    /// </summary>
+    public void PlayLoopBackward()
+    {
         this.startFrame = -1;
         this.endFrame = -1;
-        this.looping = false;
-        this.animationFrameset = frameSet;
+        this.looping = true;
         _PlayBackward();
-    }
+    }	
+	
     /// <summary>
     /// Plays this a frameset of this sprite's animation backward looping.
     /// </summary>
     /// <param name="frameSet">Animation frameset to play.</param>
     public void PlayLoopBackward(string frameSet)
     {
-        this.startFrame = -1;
-        this.endFrame = -1;
-        this.looping = true;
         this.animationFrameset = frameSet;
-        _PlayBackward();
+        PlayLoopBackward();
     }
-    /// <summary>
-    /// Plays a specific animation backward.
-    /// </summary>
-    /// <param name="animation">Animation to play.</param>
-    public void PlayBackward(OTAnimation animation)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = "";
-            PlayBackward();
-        }
-    }
-    /// <summary>
-    /// Plays a specific animation's frameset backward.
-    /// </summary>
-    /// <param name="animation">Animation to play a frameset from.</param>
-    /// <param name="frameSet">Animation framset to play backward.</param>
-    public void PlayBackward(OTAnimation animation, string frameSet)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = frameSet;
-            PlayBackward();
-        }
-    }
+	
     /// <summary>
     /// Plays this sprite's animation backward starting at the start frame.
     /// </summary>
@@ -554,24 +501,9 @@ public class OTAnimatingSprite : OTSprite
     public void PlayBackward(int startFrame)
     {
         this.startFrame = startFrame;
-        this.animationFrameset = "";
         this.endFrame = -1;
         this.delay = 0;
         _PlayBackward();
-    }
-    /// <summary>
-    /// Plays a specific animation backward starting at the start frame.
-    /// </summary>
-    /// <param name="animation">Animation to play.</param>
-    /// <param name="startFrame">Animation frame number (from the back) where to start.</param>
-    public void PlayBackward(OTAnimation animation, int startFrame)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = "";
-            PlayBackward(startFrame);
-        }
     }
 
     /// <summary>
@@ -581,26 +513,10 @@ public class OTAnimatingSprite : OTSprite
     /// <param name="delay">After this delay in seconds the animation will be started.</param>
     public void PlayBackward(int startFrame, float delay)
     {
-        this.animationFrameset = "";
         this.startFrame = startFrame;
         this.endFrame = -1;
         this.delay = delay;
         _PlayBackward();
-    }
-    /// <summary>
-    /// Plays a specific animation backward from a start frame, starting after a delay.
-    /// </summary>
-    /// <param name="animation">Animation to play.</param>
-    /// <param name="startFrame">Animation frame number (from the back) where to start.</param>
-    /// <param name="delay">After this delay in seconds the animation will be started.</param>
-    public void PlayBackward(OTAnimation animation, int startFrame, float delay)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = "";
-            PlayBackward(startFrame, delay);
-        }
     }
     /// <summary>
     /// Plays this sprite's animation partly backward from a start frame to an end frame, starting after a delay.
@@ -612,7 +528,6 @@ public class OTAnimatingSprite : OTSprite
     {
         if (startFrame <= endFrame)
         {
-            this.animationFrameset = "";
             this.startFrame = startFrame;
             this.endFrame = endFrame;
             this.delay = delay;
@@ -620,27 +535,10 @@ public class OTAnimatingSprite : OTSprite
         }
         else
         {
-            this.animationFrameset = "";
             this.endFrame = startFrame;
             this.startFrame = endFrame;
             this.delay = delay;
             _Play();
-        }
-    }
-    /// <summary>
-    /// Plays a specific animation partly backward from a start frame to an end frame, starting after a delay.
-    /// </summary>
-    /// <param name="animation">Animation to play</param>
-    /// <param name="startFrame">Animation frame number (from the back) where to start.</param>
-    /// <param name="endFrame">Animation frame number (from the back) where to end.</param>
-    /// <param name="delay">After this delay in seconds the animation will be started.</param>
-    public void PlayBackward(OTAnimation animation, int startFrame, int endFrame, float delay)
-    {
-        if (animation != null)
-        {
-            this.animation = animation;
-            this.animationFrameset = "";
-            PlayBackward(startFrame, endFrame, delay);
         }
     }
 
@@ -696,21 +594,24 @@ public class OTAnimatingSprite : OTSprite
     }
 
     /// <summary>
-    /// Show a specific animation frame.
+    /// Shows a specific animation frame.
     /// </summary>
-    /// <param name="frameIndex">Container index of the frame to show.</param>
-    public void ShowFrame(int frameIndex)
+    /// <param name="frameNumber">number of the animation frame to show.</param>
+    public void ShowFrame(int frameNumber)
     {
         if (animation != null && animation.isReady)
         {
-            if (frameIndex >= 0 && frameIndex < animation.frameCount)
-            {
+			InitAnimation();
+            if (frameNumber >= 0 && frameNumber < frames.Length)
+            {				
+				SetAnimationFrame(frames[frameNumber]);	
+				time = frameNumber * frDurationDelta;
+				frTime = 0;				
                 if (isPlaying)
                     Pauze();
-                this.frameIndex = frameIndex;
             }
             else
-                throw (new System.IndexOutOfRangeException("Frame index out of range!"));
+                throw (new System.IndexOutOfRangeException("Frame number out of range!"));
         }
     }
 
@@ -767,7 +668,43 @@ public class OTAnimatingSprite : OTSprite
 	float frTime = 0;
 	float frDurationDelta = 0;
 	OTAnimation.Frame[] frames = new OTAnimation.Frame[]{};
+	
+	void SetAnimationFrame(OTAnimation.Frame animationFrame)
+	{
+        if (spriteContainer != animationFrame.container || animationFrame.frameIndex != frameIndex)
+        {	
+			if (passive)
+			{
+	            spriteContainer = animationFrame.container;
+	            frameIndex = animationFrame.frameIndex;
+			}
+			else
+			{
+	            _spriteContainer = animationFrame.container;
+	            _frameIndex = animationFrame.frameIndex;
+			}
 
+            if (onAnimationFrame != null)
+                onAnimationFrame(this);
+            if (!CallBack("onAnimationFrame", callBackParams))
+                CallBack("OnAnimationFrame", callBackParams);
+
+            isDirty = true;
+        }
+	}
+	
+	int _animationFrameNumber = -1;
+	/// <summary>
+	/// Gets the current frame number of the playing animation (frameset)
+	/// </summary>
+	public int animationFrameNumber
+	{
+		get
+		{
+			return _animationFrameNumber;
+		}
+	}
+	
     void UpdateFrame(float deltaTime)
     {		
 		if (frames == null || frames.Length == 0)
@@ -780,27 +717,8 @@ public class OTAnimatingSprite : OTSprite
 			int idx = Mathf.FloorToInt(time/frDurationDelta);
 			if (idx>=frames.Length) idx = 0;
 	        OTAnimation.Frame animationFrame = frames[idx];
-	        if (spriteContainer != animationFrame.container || animationFrame.frameIndex != frameIndex)
-	        {	
-				if (passive)
-				{
-		            spriteContainer = animationFrame.container;
-		            frameIndex = animationFrame.frameIndex;
-				}
-				else
-				{
-		            _spriteContainer = animationFrame.container;
-		            _frameIndex = animationFrame.frameIndex;
-				}
-	
-	            if (onAnimationFrame != null)
-	                onAnimationFrame(this);
-	            if (!CallBack("onAnimationFrame", callBackParams))
-	                CallBack("OnAnimationFrame", callBackParams);
-	
-	            isDirty = true;
-	        }
-	
+			_animationFrameNumber = idx;
+			SetAnimationFrame(animationFrame);	
 	        time += (deltaTime * speed);
 	        if (endFrame != -1 && time >= endTime)
 	        {
@@ -826,7 +744,54 @@ public class OTAnimatingSprite : OTSprite
 		frTime += (deltaTime * speed);
 		// Debug.Log("frTime ="+frTime+", time = "+time);
     }
+	
+	void InitAnimation()
+	{
+        if (animationFrameset != "")
+        {
+            frameset = animation.GetFrameset(animationFrameset);
+			if (frameset!=null)
+			{
+				framesetName = frameset.name.ToLower();
+				animationFramesetLower = animationFrameset.ToLower();
+			}
+			
+            frDuration = animation.GetDuration(frameset);
+            frCount = animation.GetFrameCount(frameset);
+        }
+        else
+        {
+            frameset = null;
+            frDuration = animation.duration;
+            frCount = animation.frameCount;
+        }
+		frDurationDelta = frDuration/frCount;
+		frTime = 0;
+		
+		if (frCount==0) 
+			return;
 
+        if (startAtRandomFrame)
+            time = frDurationDelta * (Mathf.Floor(frCount * Random.value));
+        else
+        {
+            if (startFrame != -1)
+            {
+                time = frDurationDelta * startFrame;
+                if (endFrame != -1)
+                    endTime = frDurationDelta * (endFrame + 1) - 0.001f;
+
+            }
+            else
+                time = 0;
+        }
+		
+		System.Array.Resize<OTAnimation.Frame>(ref frames,frCount);			
+		// cache the animation frames for quicker lookup
+		for (int i=0; i<frCount; i++)
+			frames[i] = animation.GetFrame(i * frDurationDelta, direction, frameset);
+	}
+	
 	
 	void HandleWaiting()
 	{
@@ -834,51 +799,8 @@ public class OTAnimatingSprite : OTSprite
 	    {
 	        waitTime = 0;
 	        delay = 0;
-	
-	        if (animationFrameset != "")
-	        {
-	            frameset = animation.GetFrameset(animationFrameset);
-				if (frameset!=null)
-				{
-					framesetName = frameset.name.ToLower();
-					animationFramesetLower = animationFrameset.ToLower();
-				}
-				
-	            frDuration = animation.GetDuration(frameset);
-	            frCount = animation.GetFrameCount(frameset);
-	        }
-	        else
-	        {
-	            frameset = null;
-	            frDuration = animation.duration;
-	            frCount = animation.frameCount;
-	        }
-			frDurationDelta = frDuration/frCount;
-			frTime = 0;
-			
-			if (frCount==0) 
-				return;
-	
-	        if (startAtRandomFrame)
-	            time = frDurationDelta * (Mathf.Floor(frCount * Random.value));
-	        else
-	        {
-	            if (startFrame != -1)
-	            {
-	                time = frDurationDelta * startFrame;
-	                if (endFrame != -1)
-	                    endTime = frDurationDelta * (endFrame + 1) - 0.001f;
-	
-	            }
-	            else
-	                time = 0;
-	        }
-			
-			System.Array.Resize<OTAnimation.Frame>(ref frames,frCount);			
-			// cache the animation frames for quicker lookup
-			for (int i=0; i<frCount; i++)
-				frames[i] = animation.GetFrame(i * frDurationDelta, direction, frameset);
-									
+			InitAnimation();				
+												
 	        waiting = false;
 	
 	        if (onAnimationStart != null)
@@ -900,23 +822,35 @@ public class OTAnimatingSprite : OTSprite
 		if (animation == null && _animationName!=null)
 			animation = OT.AnimationByName(_animationName);
 		
+		if (animation == null) 
+			return;
+		
+		if (!animation.isReady)
+		{
+			if (!animation.enabled)
+				animation.SendMessage("Update");
+			return;
+		}
+		
         if (spriteContainer != null && !spriteContainer.isReady)
             return;
 
         if (speed < 0) speed = 0;
-        if (Application.isPlaying && animation != null && animation.isReady && _playing)
+        if (Application.isPlaying)		
         {
-            if (waiting)
-				HandleWaiting();
-			
-            if (!waiting)
-               	UpdateFrame(Time.deltaTime);
+			if (_playing)			
+			{
+	            if (waiting)
+					HandleWaiting();
+				
+	            if (!waiting)
+	               	UpdateFrame(Time.deltaTime);
+			}
         }
         else
 			EditorPreview();
 		
-		if (!passive)
-        	base.Update();
+       	base.Update();
     }
 	
 	void EditorPreview()

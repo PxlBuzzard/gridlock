@@ -25,9 +25,7 @@ public class OTGradientSprite : OTSprite
     //-----------------------------------------------------------------------------
 	
 	public GradientOrientation _gradientOrientation = GradientOrientation.Vertical;
-	
-    public OTGradientSpriteColor[] _gradientColors;
-	
+		
     //-----------------------------------------------------------------------------
     // public attributes (get/set)
     //-----------------------------------------------------------------------------
@@ -49,11 +47,14 @@ public class OTGradientSprite : OTSprite
 			{
 				_gradientOrientation = value;			
 				meshDirty = true;
-
 				isDirty = true;
+				Update();
 			}
 		}
 	}
+	
+	
+    public OTGradientSpriteColor[] _gradientColors;	
 	/// <summary>
 	/// Gets or sets the gradient colors.
 	/// </summary>
@@ -71,6 +72,7 @@ public class OTGradientSprite : OTSprite
 			_gradientColors = value;			
 			meshDirty = true;			
 			isDirty = true;
+			Update();
 		}
 	}
 	

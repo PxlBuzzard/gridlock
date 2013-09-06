@@ -11,7 +11,7 @@ public class OTAnimatingSpritePassive : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (sprite.passive)
+		if (sprite.passive && !sprite.enabled)
 			sprite.ForceUpdate();
 	}
 }

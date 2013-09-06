@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 
 /// <summary>
 /// <b><a href="http://www.wyrmtale.com/products/unity3d-components/orthello-pro" target="_blank" >PRO</a></b> 
@@ -9,14 +8,6 @@ using System;
 /// </summary>
 public class OTSpriteBatch : OTObject
 {
-    /// <summary>
-    /// Spritebatch change monitor is on/off
-    /// </summary>
-    public bool autoCheckSprites = false;
-    /// <summary>
-    /// Spritebatch change monitor frequency (in seconds)
-    /// </summary>
-    public float autoCheckFrequency = 0.5f;
     /// <summary>
     /// Use one packed texture.
     /// </summary>
@@ -38,7 +29,6 @@ public class OTSpriteBatch : OTObject
     /// </summary>
     public bool checkTintedAlpha = false;
 
-    float autoCheckTime = 0;
     bool _packTextures = false;	
 		
     /// <summary>
@@ -67,6 +57,8 @@ public class OTSpriteBatch : OTObject
         public int vertexCount;
         public int verticeIdx;
         public int triangleIdx;
+        public int triCount;
+        public int subMesh;
         public int subTriangleIdx;
         public int uvIdx;
         public int uvCount;
@@ -88,8 +80,14 @@ public class OTSpriteBatch : OTObject
     List<Texture2D> texturesToPack = new List<Texture2D>();
 
     Dictionary<int, int> lookup = new Dictionary<int, int>();
+	List<OTSprite> linked = new List<OTSprite>();
 
     // Use this for initialization
+    new protected void Awake()		
+    {
+		passiveControl = true;
+		base.Awake();
+	}
     
     new protected void Start()
     {
@@ -105,27 +103,25 @@ public class OTSpriteBatch : OTObject
         return "OTSpriteBatch";
     }
 
-	Color[] GetColors(SpriteData data, int count)
+	Color[] GetColors(SpriteData data)
 	{
-		if (data.mf.mesh.colors.Length == 0)
+		Color[] co = new Color[] {};
+		co = data.sprite.colors;		
+		if (!data.sprite.visible)
 		{
-			Color[] co = new Color[] {};
-			System.Array.Resize<Color>(ref co,count);
 			for (int i=0; i<co.Length; i++)
-				co[i] = new Color(1,1,1,1);
-			return co;
-		}
-		else
-			return data.mf.mesh.colors;
+				co[i] = Color.clear;
+		}		
+		return co;
 	}
-	
+		
     Vector3[] GetVertices(SpriteData data)
     {
         Matrix4x4 matrix = new Matrix4x4();
-        matrix.SetTRS(
-            new Vector3(data.position.x - position.x - data.sprite._offset.x, data.position.y - position.y - data.sprite._offset.y, data.depth),
-            Quaternion.Euler(0, 0, data.rotation), new Vector3(data.size.x, data.size.y, 1));
 
+		Vector3 scale = data.sprite.otTransform.lossyScale;
+		matrix.SetTRS( data.sprite.otTransform.position - otTransform.position, data.sprite.otTransform.rotation, scale);
+		
         Vector3[] newVertices = data.mf.mesh.vertices;
         for (int v = 0; v < newVertices.Length; v++)
             newVertices[v] = matrix.MultiplyPoint3x4(newVertices[v]);
@@ -156,7 +152,7 @@ public class OTSpriteBatch : OTObject
         else
 		{
             meshUV = new Vector2[] { };
-			Array.Resize<Vector2>(ref meshUV, count);
+			System.Array.Resize<Vector2>(ref meshUV, count);
 		}
 		
         return meshUV;
@@ -183,6 +179,13 @@ public class OTSpriteBatch : OTObject
                     return false;								
 				
                 gameObjects.Add(g);
+				
+				if (!lookup.ContainsKey(sprite.GetInstanceID()))
+				{
+					sprite.onObjectChanged += SpriteChanged;
+					sprite._iMsg = "batched";
+				}
+				
                 sprites.Add(sprite);
             }
         }
@@ -231,49 +234,82 @@ public class OTSpriteBatch : OTObject
             }
         }
     }
+	
+	void ResetRemovedSprites()
+	{
+        for (int s = 0; s < spriteData.Count; s++)
+        {
+            SpriteData data = spriteData[s];
+			
+			// check if we have removed this sprite using remove sprite
+			if (data.sprite == null)
+				continue;
+			
+            if (!sprites.Contains(data.sprite))
+            {
+				data.sprite._iMsg = "!batched";
+				
+                if (deactivateSprites)					
+				{
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5
+                    data.sprite.gameObject.active = true;
+#else
+                    data.sprite.gameObject.SetActive(true);
+#endif
+					
+				}
+                else
+                    data.sprite.visible = true;
+				data.sprite.onObjectChanged -= SpriteChanged;
+                data.sprite.StartUp();
+            }
+        }		
+	}
 
-    
+    bool linkedInitializing = false;
     protected override Mesh GetMesh()
-    {
+    {		
+        if (!Application.isPlaying)
+            return null;
+				
+        sprites.Clear();
+        // first check if all children are ready
+        if (!ChildrenReady())
+            return null;		
+		
+		if (linked.Count>0)
+		{
+			linkedInitializing = false;
+			for (int i=0; i<linked.Count; i++)
+				if (!linked[i].hasMesh || linked[i].uv == null)
+				{
+					linkedInitializing = true;
+					return null;
+				}
+			sprites.AddRange(linked);		
+		}
+		
+		if (sprites.Count==0)
+		{
+			ResetRemovedSprites();
+			meshDirty = false;
+			return new Mesh();
+		}
+		
         submeshMaterials.Clear();
         submeshTriangles.Clear();
         submeshes.Clear();
         gameObjects.Clear();
-        sprites.Clear();
         packedUvs.Clear();
         texturesToPack.Clear();
-
-        if (!Application.isPlaying)
-            return null;
-
-        // first check if all children are ready
-        if (!ChildrenReady())
-            return null;
+				
 		
 #if UNITY_EDITOR		
 		if (packTextures && Application.isEditor)
 			CheckTexturesReadWrite();			
 #endif
-				
-        for (int s = 0; s < spriteData.Count; s++)
-        {
-            SpriteData data = spriteData[s];
-            if (!sprites.Contains(data.sprite))
-            {
-                if (deactivateSprites)
-                    data.sprite.gameObject.active = true;
-                else
-                    data.sprite.visible = true;
-                data.sprite.StartUp();
-            }
-        }
-
-        if (sprites.Count == 0)
-        {
-            visible = false;
-            meshDirty = false;
-            return null;
-        }
+		
+		ResetRemovedSprites();
 
         Material mat = null;
         spriteData.Clear();
@@ -299,31 +335,38 @@ public class OTSpriteBatch : OTObject
             {
                 OTSprite sprite = sprites[sprites.Count - 1 - c];
                 GameObject g = sprite.gameObject;
-
+				
                 MeshFilter mf = g.GetComponent<MeshFilter>();
                 if (mf.mesh != null)
                 {
-
                     SpriteData data = new SpriteData();
 
-                    string scId = "-1";
-                    if (sprite.spriteContainer != null)
-                        scId = "" + sprite.spriteContainer.GetInstanceID();
+                    string scId = sprite.materialReference;
+
+                    if (sprite is OTFilledSprite)
+                        scId += "|"+sprite.GetInstanceID();
+					
+					if (sprite.spriteContainer != null)
+                        scId += "|"+sprite.spriteContainer.GetInstanceID();
                     else
                         if (sprite.image != null)
-                            scId = "" + sprite.image.GetInstanceID();
+                            scId += "|" + sprite.image.GetInstanceID();
 
-                    if (checkTintedAlpha)
+                    if (checkTintedAlpha && (sprite.materialReference == "tint" || sprite.materialReference=="alpha"))                   
                         scId += "|" + sprite.tintColor + "|" + sprite.alpha;
 
                     if (scId != "-1")
                     {
+						data.subMesh = -1;
                         if (packTextures)
                         {
                             if (packedMaterial != null)
                                 mat = new Material(packedMaterial);
                             if (mat == null)
+							{
+								
                                 mat = new Material(sprite.otRenderer.material);
+							}
                             if (!texturesToPack.Contains(sprite.otRenderer.material.mainTexture as Texture2D))
                             {
                                 texturesToPack.Add(sprite.otRenderer.material.mainTexture as Texture2D);
@@ -338,26 +381,36 @@ public class OTSpriteBatch : OTObject
                             {
                                 subTriangles = new List<int>();
                                 submeshTriangles.Add(scId, subTriangles);
-                                mat = new Material(sprite.otRenderer.material);
+                                mat = new Material(sprite.otRenderer.material);															
                                 if (sprite.spriteContainer != null)
                                     mat.mainTexture = sprite.spriteContainer.GetTexture();
                                 else
                                     mat.mainTexture = sprite.image;
-
-                                mat.mainTextureScale = Vector2.one;
-                                mat.mainTextureOffset = Vector2.zero;
+								
+								if (!(sprite is OTFilledSprite))
+								{
+	                                mat.mainTextureScale = Vector2.one;
+	                                mat.mainTextureOffset = Vector2.zero;
+								}
                                 submeshMaterials.Add(mat);
                                 submeshCount++;
                                 submeshes.Add(scId);
                             }
                             else
                                 subTriangles = submeshTriangles[scId];
+							
+							data.subMesh = submeshes.IndexOf(scId);
                         }
                     }
-					
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5
                     data.active = sprite.gameObject.active;
                     if (deactivateSprites)
                         sprite.gameObject.active = false;
+#else
+                    data.active = sprite.gameObject.activeSelf;
+                    if (deactivateSprites)
+                        sprite.gameObject.SetActive(false);
+#endif
 
                     data.index = spriteData.Count;
                     data.sprite = sprite;
@@ -379,20 +432,21 @@ public class OTSpriteBatch : OTObject
                     vertices.AddRange(vts);
                     int[] tri = GetTriangles(data);
 
-					colors.AddRange(GetColors(data, vts.Length ));
+					colors.AddRange(GetColors(data));
                     triangles.AddRange(tri);
                     subTriangles.AddRange(tri);
+					data.triCount = tri.Length;
 					
 					Vector2[] _uv = GetUV(data,vts.Length);
 					data.uvCount = _uv.Length;
 					
                     uv.AddRange(_uv);
-					
+										
                     lookup.Add(data.sprite.GetInstanceID(), spriteData.Count);
                     spriteData.Add(data);
 
                     if (!deactivateSprites)
-                        data.sprite.visible = false;
+                        data.sprite._iMsg = "hide";
                 }
             }
 
@@ -412,6 +466,7 @@ public class OTSpriteBatch : OTObject
                 for (int i = submeshCount - 1; i >= 0; i--)
                     mesh.SetTriangles(submeshTriangles[submeshes[i]].ToArray(), i);
                 otRenderer.materials = submeshMaterials.ToArray();
+												
             }
             else
             {
@@ -432,7 +487,7 @@ public class OTSpriteBatch : OTObject
                         }
                     }
                 }
-					
+									
                 mesh.uv = uv.ToArray();
                 mesh.subMeshCount = 1;
                 otRenderer.materials = new Material[] { };
@@ -458,20 +513,30 @@ public class OTSpriteBatch : OTObject
     public void Build()
     {
         meshDirty = true;
-		Passive();
     }
+	
+	List<OTObject> changedObjects = new List<OTObject>();
+	void SpriteChanged(OTObject owner)
+	{
+		changedObjects.Add(owner);
+	}
 
     void Build(SpriteData data)
     {
 
         MeshFilter mf = GetComponent<MeshFilter>();
-        if (mf != null && mf.mesh != null)
+        if (mf != null && mf.mesh != null && mf.mesh.vertexCount>0)
         {
             int vi = data.verticeIdx;
             int vc = data.vertexCount;
             int ep = vi + vc;
 			
-
+			int ti = data.triangleIdx;
+			int sti = data.subTriangleIdx;
+			int tc = data.triCount;
+			int tep = ti + tc;
+			int step = sti + tc;
+			
             data.position = data.sprite.position;						
             data.rotation = data.sprite.rotation;
             data.size = data.sprite.size;
@@ -479,27 +544,135 @@ public class OTSpriteBatch : OTObject
             data.frameIndex = data.sprite.frameIndex;
 
             Vector2[] meshUvs = mf.mesh.uv;
+            Color[]   meshColors = mf.mesh.colors;
 			Vector3[] meshVs = mf.mesh.vertices;
-            Vector3[] spriteVs = GetVertices(data);
-			
-            Vector3[] vs = new Vector3[meshVs.Length - vc + spriteVs.Length];
-			
-            Array.Copy(meshVs, 0, vs, 0, vi);
-            Array.Copy(spriteVs, 0, vs, vi, spriteVs.Length);
-            Array.Copy(meshVs, ep, vs, vi + spriteVs.Length, meshVs.Length - ep);
+			int[] 	  meshTri = mf.mesh.triangles;
+			List<int[]> subTris = new List<int[]>();
+			Material[] materials = otRenderer.materials;
 
-            mf.mesh.vertices = vs;
-			data.vertexCount = spriteVs.Length;
+			for (int i=0; i<mf.mesh.subMeshCount; i++)
+				subTris.Add(mf.mesh.GetTriangles(i));
+						
+			// temporary clear triangles and sub triangles;			
+						
+			// adjust vertices
+			Vector3[] spriteVs = GetVertices(data);			
+            Vector3[] vs = new Vector3[meshVs.Length - vc + spriteVs.Length];
 									
+            System.Array.Copy(meshVs, 0, vs, 0, vi);
+            System.Array.Copy(spriteVs, 0, vs, vi, spriteVs.Length);
+            System.Array.Copy(meshVs, ep, vs, vi + spriteVs.Length, meshVs.Length - ep);
+
+			int vDelta = spriteVs.Length - vc;
+			
+
+			if (vDelta!=0)
+				mf.mesh.triangles = new int[] {};
+			
+            mf.mesh.vertices = vs;			
+			data.vertexCount = spriteVs.Length;
+			
+			// adjust uv coordinates									
             Vector2[] spriteUvs = GetUV(data,spriteVs.Length);
 			data.uvCount = spriteUvs.Length;
             Vector2[] us = new Vector2[vs.Length];
-            Array.Copy(meshUvs, 0, us, 0, vi);
-            Array.Copy(spriteUvs, 0, us, vi, spriteUvs.Length);
-            Array.Copy(meshUvs, ep, us, vi + spriteUvs.Length, meshUvs.Length - ep);
+            System.Array.Copy(meshUvs, 0, us, 0, vi);
+            System.Array.Copy(spriteUvs, 0, us, vi, spriteUvs.Length);
+            System.Array.Copy(meshUvs, ep, us, vi + spriteUvs.Length, meshUvs.Length - ep);
+			
+
+			// check if vertexcount and triangles have changed
+			if (vDelta!=0)
+			{				
+				// adjust triangles
+	            int[] spriteTri = GetTriangles(data);
+					
+				// re-index all vertex indices
+				for (int i=0; i<meshTri.Length; i++)
+					if (meshTri[i]>=data.verticeIdx+vc)
+						meshTri[i] += vDelta;
+				
+				// re-index vertex indices of the submeshes
+				if (!packTextures)
+					for (int i=subTris.Count-1; i>=0; i--)
+					{				
+						for (int ii=0; ii<subTris[i].Length; ii++)
+							if (subTris[i][ii]>=data.verticeIdx+vc)
+								subTris[i][ii] += vDelta;
+					}
+													
+				// adjust vertex and uv index for this sprite in the batch
+				for (int s=0; s < spriteData.Count; s++)
+				{
+					if (spriteData[s].sprite!=null)
+					{
+						if (spriteData[s].sprite!=data.sprite && spriteData[s].verticeIdx>=data.verticeIdx)
+						{
+							SpriteData d = spriteData[s];
+							d.verticeIdx += vDelta;
+							d.uvIdx += vDelta;
+							spriteData[s] = d;
+						}
+					}
+				}
+							
+				int tDelta = spriteTri.Length - data.triCount;
+							
+				// adjust triangles
+				data.triCount = spriteTri.Length;
+	            int[] tri = new int[meshTri.Length - tc + spriteTri.Length ];
+	            System.Array.Copy(meshTri, 0, tri, 0, ti);
+	            System.Array.Copy(spriteTri, 0, tri, ti, spriteTri.Length);
+	            System.Array.Copy(meshTri, tep, tri, ti + spriteTri.Length, meshTri.Length - tep);
+																		
+				if (!packTextures)
+				{
+					int[] subMeshTri = subTris[data.subMesh];
+		            int[] stri = new int[subMeshTri.Length - tc + spriteTri.Length ];
+		            System.Array.Copy(subMeshTri, 0, stri, 0, sti);
+		            System.Array.Copy(spriteTri, 0, stri, sti, spriteTri.Length);
+		            System.Array.Copy(subMeshTri, step, stri, sti + spriteTri.Length, subMeshTri.Length - step);				
+					subTris[data.subMesh] = stri;				
+					
+					// adjust submesh triangle index for this sprite in the batch
+					for (int s=0; s < spriteData.Count; s++)
+						if (spriteData[s].sprite!=null && spriteData[s].subMesh == data.subMesh && spriteData[s].sprite!=data.sprite && spriteData[s].subTriangleIdx>=data.subTriangleIdx)
+						{
+							SpriteData d = spriteData[s];				
+							d.subTriangleIdx += tDelta;
+							spriteData[s] = d;
+						}				
+				}
+				
+				// adjust triangle index for this sprite in the batch
+				for (int s=0; s < spriteData.Count; s++)
+					if (spriteData[s].sprite!=null && spriteData[s].sprite!=data.sprite && spriteData[s].triangleIdx>data.triangleIdx)
+					{
+						SpriteData d = spriteData[s];				
+						d.triangleIdx += tDelta;
+						spriteData[s] = d;
+					}
+				
+				mf.mesh.triangles = tri;
+				
+			}
+			
+			
+			
+			// adjust colors
+            Color[] spriteColors = GetColors(data);
+			
+			
+            Color[] cs = new Color[meshColors.Length - vc + spriteColors.Length];
+			
+            System.Array.Copy(meshColors, 0, cs, 0, vi);
+            System.Array.Copy(spriteColors, 0, cs, vi, spriteColors.Length);
+            System.Array.Copy(meshColors, ep, cs, vi + spriteColors.Length, meshColors.Length - ep);								
+			
+			mf.mesh.colors = cs;									
 			
             spriteData[data.index] = data;
-									
+											
             if (packTextures)
             {
                 Rect uvBase = packedUvs[data.textureIdx];
@@ -509,30 +682,29 @@ public class OTSpriteBatch : OTObject
                     us[data.uvIdx + u] = new Vector2(uvBase.x + (uvBase.width * v.x), uvBase.y + (uvBase.height * v.y));
                 }
             }								
+			else
+			{
+				
+				if (data.sprite is OTFilledSprite || (checkTintedAlpha && (data.sprite.materialReference == "tint" || data.sprite.materialReference == "alpha")))
+				{
+					materials[data.subMesh] = data.sprite.otRenderer.material;
+					if (vDelta == 0)
+						otRenderer.materials = materials;						
+				}
+				
+				if (vDelta!=0)
+				{
+	                mf.mesh.subMeshCount = subTris.Count;
+					for (int i=subTris.Count-1; i>=0; i--)
+						mf.mesh.SetTriangles(subTris[i],i);					
+					otRenderer.materials = materials;
+				}
+			}
 			
-            mf.mesh.uv = us;
+            mf.mesh.uv = us;						
             mf.mesh.RecalculateBounds();
             mf.mesh.RecalculateNormals();
         }
-    }
-
-    void CheckSprites()
-    {
-        for (int s = 0; s < spriteData.Count; s++)
-            CheckSprite(spriteData[s]);
-    }
-
-    bool CheckSprite(SpriteData data)
-    {
-        if (!Vector2.Equals(data.position, data.sprite.position) ||
-            !Vector2.Equals(data.size, data.sprite.size) ||
-            data.rotation != data.sprite.rotation ||
-            data.frameIndex != data.sprite.frameIndex)
-        {
-            Build(data);
-            return true;
-        }
-        return false;
     }
 
     /// <summary>
@@ -542,30 +714,34 @@ public class OTSpriteBatch : OTObject
     /// <param name="newParent">Move sprite to this parent</param>
     public void RemoveSprite(OTSprite sprite, GameObject newParent)
     {
-        meshDirty = true;
-        if (newParent != null)
-            sprite.otTransform.parent = newParent.transform;
-        else
-            sprite.otTransform.parent = null;
+        meshDirty = true;	
 
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5
         sprite.gameObject.SetActiveRecursively(true);
-        lookup.Remove(sprite.GetInstanceID());
+#else
+        sprite.gameObject.SetActive(true);
+#endif
+		
+		if (lookup.ContainsKey(sprite.GetInstanceID()))
+		{
+			spriteData[lookup[sprite.GetInstanceID()]] = new SpriteData();
+        	lookup.Remove(sprite.GetInstanceID());			
+		}			
         sprites.Remove(sprite);
-        for (int s = 0; s < spriteData.Count; s++)
-        {
-            if (spriteData[s].sprite == sprite)
-            {
-                spriteData.Remove(spriteData[s]);
-                break;
-            }
-        }
+		if (linked.Contains(sprite))
+			linked.Remove(sprite);
+		else
+			sprite.otTransform.parent = newParent.transform;
+		
+		sprite.onObjectChanged -= SpriteChanged;
+		sprite._iMsg = "show";
+		sprite._iMsg = "!batched";
+				
         sprite.StartUp();
-		Passive();
     }
 
     /// <summary>
-    /// Will remove a sprite from the SpriteBatch and move to root
-    /// </summary>
+    /// Will remove a sprite from the SpriteBatch
     /// <param name="sprite">Sprite to remove</param>
     public void RemoveSprite(OTSprite sprite)
     {
@@ -576,33 +752,26 @@ public class OTSpriteBatch : OTObject
     /// Add a sprite to the SpriteBatch
     /// </summary>
     /// <param name="sprite">Sprite to add</param>
+    /// <remarks>
+    /// The sprite is added while it stays in its
+    /// original scene hierarchy location. It will not be 
+    /// moved as a child of the batch object.
+    /// </remarks>
     public void AddSprite(OTSprite sprite)
     {
-        if (!lookup.ContainsKey(sprite.GetInstanceID()) && sprite.otTransform.parent != transform)
+		if (linked.Contains(sprite))
+			return;
+		
+        if (!lookup.ContainsKey(sprite.GetInstanceID()))
         {
-            sprite.otTransform.parent = transform;
+			if (sprite.otTransform.parent!=transform)
+				linked.Add(sprite);
+			sprite.onObjectChanged += SpriteChanged;
+			sprite._iMsg = "batched";
             meshDirty = true;
-			Passive();			
         }
     }
-
-    /// <summary>
-    /// Updates a sprite in the SpriteBatch
-    /// </summary>
-    /// <param name="sprite">Sprite to update</param>
-    public void SetSprite(OTSprite sprite)
-    {										
-        if (lookup.ContainsKey(sprite.GetInstanceID()))
-            CheckSprite(spriteData[lookup[sprite.GetInstanceID()]]);
-        else
-        {
-            sprite.otTransform.parent = transform;
-            meshDirty = true;
-			Passive();			
-        }
-    }
-	
-	
+				
 #if UNITY_EDITOR
 	static List<Texture2D> textureChecked = new List<Texture2D>();
 	public void CheckTexturesReadWrite()
@@ -627,63 +796,58 @@ public class OTSpriteBatch : OTObject
 			}
 	}
 #endif
-	
+
+	public override void PassiveUpdate()
+	{
+		if (meshDirty || !ChildrenChecked || changedObjects.Count>0)
+			Update();
+	}
 	
     // Update is called once per frame    
     new protected void Update()
     {
-		if (!ChildrenChecked || mesh == null)
+		if (!ChildrenChecked)
 			meshDirty = true;
-		
-        if (!meshDirty && autoCheckSprites)
-        {
-            autoCheckTime += Time.deltaTime;
-            if (autoCheckTime >= autoCheckFrequency)
-            {
-                if (ChildrenChanged())
-                {
-                    for (int g = 0; g < gameObjects.Count; g++)
-                    {
-                        if (gameObjects[g].transform.parent != transform)
-                        {
-                            OTSprite sprite = gameObjects[g].GetComponent<OTSprite>();
-                            if (sprite != null) sprite.visible = true;
-                        }
-                    }
-                    meshDirty = true;
-                }
-                else
-                    CheckSprites();
-                autoCheckTime = 0;
-            }
-        }
 
+		while (changedObjects.Count>0)
+		{
+			int id = (changedObjects[0] as OTSprite).GetInstanceID();
+			if (lookup.ContainsKey(id))
+				Build(spriteData[lookup[id]]);
+			changedObjects.RemoveAt(0);						
+		}
+		
+		
         if (packTextures != _packTextures)
         {
             _packTextures = packTextures;			
             meshDirty = true;
         }
 				
-        base.Update();
+		if (!passive || meshDirty)
+        	base.Update();
+		
+		if (linkedInitializing || !ChildrenChecked)
+			meshDirty = true;
+		
+		
+		if (depth!=0)
+			depth = 0;
+		
+		if (!otTransform.position.Equals(Vector3.zero))
+		{
+			otTransform.position = Vector3.zero;
+			position = Vector2.zero;
+		}		
     }
 	
+	/*
 	public void SpriteAfterMesh(OTObject o)
 	{
 		OTSprite sprite = (o as OTSprite);
 		if (sprite!=null)
-		{
             meshDirty = true;
-			/*
-			
-	        if (lookup.ContainsKey(sprite.GetInstanceID()))
-            	Build(spriteData[lookup[sprite.GetInstanceID()]]);
-	        else
-	        {
-	            sprite.transform.parent = transform;
-	            meshDirty = true;
-	        }
-	        */
-		}
 	}
+	*/
 	
 }

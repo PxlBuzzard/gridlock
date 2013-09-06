@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------
-WyrmTale Orthello 2D framework v2.6 (Unity3)
+WyrmTale Orthello 2D framework v2.9 (Unity3+4)
 (C)opyright 2011 WyrmTale Games
 -------------------------------------------------------------------------
 
@@ -23,7 +23,9 @@ After importing is complete, you will be ready to go.
 
 Examples
 
-in  [Project] /Orthello/Examples you will find the  examples
+in  [Project] /Orthello/Examples you will find the 7 base examples
+and 3 pro examples
+
 
 !IMPORTANT!! If would like to run the JS Javascript Examples, take the following steps
 

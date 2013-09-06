@@ -146,7 +146,7 @@ public class OTSpriteAtlas : OTContainer
 		metaData[metaData.Length-1].value = value;				
 	}	
     
-    new protected void Update()
+    protected override void Update()
     {
         if (_offsetSizing!=offsetSizing || _texture!=texture)
         {

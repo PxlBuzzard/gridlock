@@ -84,8 +84,13 @@ public class OTFilledSprite : OTSprite
     {
         Clean();
     }
-
     
+	public override void PassiveUpdate()
+	{
+		if (!scrollSpeed.Equals(Vector2.zero))
+			Update();
+	}
+	
     protected override string GetTypeName()
     {
         return "Filled Sprite";
@@ -96,7 +101,12 @@ public class OTFilledSprite : OTSprite
     {
        return base.GetMatName() + "-Size:"+size.ToString()+"-fill:" + fillSize.ToString();
     }
-
+	
+	protected override void Resized()
+	{
+		SetTexture();
+	}
+	
     void SetTexture()
     {
         if (image != null)
@@ -141,6 +151,7 @@ public class OTFilledSprite : OTSprite
     
     protected override void Awake()
     {
+		passiveControl = true;
         _fillSize_ = fillSize;
         base.Awake();
     }
@@ -153,6 +164,9 @@ public class OTFilledSprite : OTSprite
 	
  	new void Update()
     {
+	
+		if (otTransform == null)
+			return;
 		
 		if (!_size_.Equals(new Vector2(otTransform.localScale.x,otTransform.localScale.y)))
 		{
@@ -160,7 +174,8 @@ public class OTFilledSprite : OTSprite
 		}
 		
 		
-        base.Update();
+		if (!passive)
+        	base.Update();
 			
 		// scroll background
         if (!scrollSpeed.Equals(Vector2.zero))

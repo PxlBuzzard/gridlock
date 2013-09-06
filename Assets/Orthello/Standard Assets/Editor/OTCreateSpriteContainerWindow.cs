@@ -863,7 +863,8 @@ public class OTCreateSpriteContainerWindow : EditorWindow
     {
         CreateSpriteSheets();
     }
-
+	
+	
     //-------------------------------------------------------------
     Vector2 scrollPos = Vector2.zero;
     void OnGUI()
@@ -938,7 +939,11 @@ public class OTCreateSpriteContainerWindow : EditorWindow
                 sizeMaxIdx = EditorGUI.Popup(R(110, 100), sizeMaxIdx, new string[] { "256", "512", "1024", "2048", "4096" });
                 NL();
 			
+#if UNITY_3_0 || UNITY_3_1 || UNITY_3_2 || UNITY_3_3 || UNITY_3_4 || UNITY_3_5												
 				EditorGUI.indentLevel = 6;
+#else
+				EditorGUI.indentLevel = 4;
+#endif
 				xp=-42;
 				int xp2 = 10;
 			
@@ -968,11 +973,15 @@ public class OTCreateSpriteContainerWindow : EditorWindow
                     GUI.Label(RN(xp2 + 120, 600), "Images will be removed.");
                 else
                     GUI.Label(RN(xp2 + 120, 600), "Keep images.");
-                addToScene = EditorGUI.Toggle(R(100), "Add to scene", addToScene);
+			
+                addToScene = EditorGUI.Toggle(R(200), "Add to scene", addToScene);
                 if (addToScene)
                     GUI.Label(RN(xp2 + 120, 600), "Spritesheet(s), animation object and animating sprite will be created.");
                 else
                     GUI.Label(RN(xp2 + 120, 600), "No objects will be created.");
+			
+			
+			
                 NL();
 				xp = 10;
                 GUI.Label(R(170, 600), "" + texCount + " texture" + ((texCount == 1) ? "" : "s") + " " + texSize.x + " x " + texSize.y + " px");

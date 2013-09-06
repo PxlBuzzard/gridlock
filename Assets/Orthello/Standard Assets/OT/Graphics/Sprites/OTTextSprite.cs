@@ -6,14 +6,21 @@ public class OTTextSprite : OTSprite
 {
 	
 	public string text;
+	[HideInInspector]
+	public string _text;
+	
 	public TextAsset textFile;	
 	public int wordWrap = 0;
 	public bool justify = false;
+	public float lineHeightModifier = 1;
+	
 				
-    private string _text;
+    private string _text_;
     private TextAsset _textFile;
+	
 	private int _wordWrap = 0;
 	private bool _justify = false;
+	private float _lineHeightModifier = 1;
 	
 	long _bytesLines = 0;
 	List<OTTextAlinea> _parsed = new List<OTTextAlinea>();
@@ -21,8 +28,7 @@ public class OTTextSprite : OTSprite
 	Vector3[] verts = new Vector3[] {};
 	Vector2[] _uv = new Vector2[] {};
 	int[] tris = new int[] {};
-	
-
+			
 	long GetBytes()
 	{
 		if (textFile!=null)
@@ -51,9 +57,42 @@ public class OTTextSprite : OTSprite
 			else
 				dy = "50";
 		}
-		return dy;
+		
+		float idy = (float)System.Convert.ToDouble(dy);
+		idy *= lineHeightModifier;
+		idy = Mathf.Round(idy);
+		
+		
+		
+		return ""+idy;
+	}
+
+	public Vector2 CursorPosition(IVector2 pos)
+	{
+		if (text == "")
+			return transform.position;		
+		
+		Rect r = worldRect;
+		Vector2 p = new Vector2(r.xMin, r.yMin + r.height/2);
+		
+		int px = 0;
+		int tx = 0;
+		for (int i=0; i<sizeChars.Length; i++)
+		{
+			if (i<sizeChars.Length && i<pos.x)
+				px+=(sizeChars[i]);
+			tx+=(sizeChars[i]);
+		}		
+		
+		if (tx>0 && px >0)
+			return p + new Vector2((r.width/tx) * px,0);
+		else
+			return transform.position;
 	}
 		
+	int[] sizeChars = new int[]{};
+	
+	int lineHeight = 0;
 	void ParseText()
 	{
 		_bytesLines = GetBytes();
@@ -65,24 +104,41 @@ public class OTTextSprite : OTSprite
 			_parsed[p].Clean();		
 		_parsed.Clear();
 		
+		
 		int dy = System.Convert.ToUInt16(GetDY());
 		int yPosition = 0;
 		OTSpriteAtlas atlas = (spriteContainer as OTSpriteAtlas);		
-		OTTextAlinea alinea = new OTTextAlinea(yPosition);		
+						
+		
+		OTAtlasData data = atlas.atlasData[0];
+		if (data!=null && data.frameSize.y>0 && lineHeight == 0)
+			lineHeight = (int)data.frameSize.y;
+				
+		
+		sizeChars = new int[]{};
+		System.Array.Resize<int>(ref sizeChars, chars.Length);
+		int ci = 0;
+				
+		OTTextAlinea alinea = new OTTextAlinea(yPosition, lineHeight);		
 		foreach(char c in chars) {
 								
-			if (c=='\r') continue;
+			if (c=='\r') 
+			{
+				sizeChars[ci++] = 0;
+				continue;
+			}
 			if (c=='\n')
 			{
 				alinea.End();
 				_parsed.Add(alinea);
 				yPosition -= dy;				
-				alinea = new OTTextAlinea(yPosition);				
+				alinea = new OTTextAlinea(yPosition, lineHeight);				
+				sizeChars[ci++] = 0;
 				continue;
 			}			
-			OTAtlasData data = atlas.DataByName(""+c);
-			OTContainer.Frame frame = atlas.FrameByName(""+c);						
-
+			data = atlas.DataByName(""+c);
+			OTContainer.Frame frame = atlas.FrameByName(""+c);		
+			
 			if (data==null || frame.name=="")
 			{
 				string charName = ((int)c).ToString();
@@ -109,6 +165,9 @@ public class OTTextSprite : OTSprite
 				frame = atlas.FrameByName("32");			
 			}
 			
+			if (data!=null && data.frameSize.y>0 && lineHeight == 0)
+				lineHeight = (int)data.frameSize.y;
+			
 			if (data!=null && frame.name == data.name)
 			{
 				if (data.name!="32")
@@ -122,7 +181,19 @@ public class OTTextSprite : OTSprite
 					alinea.Add(((char)c).ToString(), data, verts, frame.uv);
 				}								
 				else
-				  alinea.NextWord(data);
+				   alinea.NextWord(data);
+				
+				
+				string dx = data.GetMeta("dx");
+				int width = 0;
+				if (dx=="")
+					width = (int)(data.offset.x + data.size.x);
+				else
+					width = System.Convert.ToUInt16(dx);
+				
+				if (width == 0) width = 30;				
+				sizeChars[ci++] = width;				
+				
 			}						
 		}
 		alinea.End();
@@ -167,6 +238,7 @@ public class OTTextSprite : OTSprite
 		
 		
 		for (int p = 0; p<_parsed.Count; p++)
+		{
 			for (int l=0; l<_parsed[p].lines.Count; l++)
 			{
 				Vector3[] lineVerts = _parsed[p].lines[l].GetVerts(wi,pivotPoint, (l==_parsed[p].lines.Count-1)?false:justify);
@@ -178,8 +250,8 @@ public class OTTextSprite : OTSprite
 			
 				System.Array.Resize<Vector3>(ref verts, verts.Length + lineVerts.Length);
 				lineVerts.CopyTo(verts,vIdx);
-				System.Array.Resize<int>(ref tris, tris.Length + (6 * _parsed[p].lines[l].charCount));
-				for (int tr = 0; tr< _parsed[p].lines[l].charCount; tr++)
+				System.Array.Resize<int>(ref tris, tris.Length + (6 * (_parsed[p].lines[l].charCount+1)));
+				for (int tr = 0; tr<= _parsed[p].lines[l].charCount; tr++)
 				{
 					new int[] {
 						vIdx, vIdx+1, vIdx+2,
@@ -191,9 +263,9 @@ public class OTTextSprite : OTSprite
 		
 			 	System.Array.Resize<Vector2>(ref _uv, _uv.Length + lineUV.Length );			
 				lineUV.CopyTo(_uv, uIdx);
-			
-			
+						
 			}		
+		}
 		
 		mesh.vertices = TranslatePivotVerts(mesh, verts);		
         mesh.uv = _uv;		
@@ -217,8 +289,7 @@ public class OTTextSprite : OTSprite
 			b.center = mesh.bounds.center;
 			b.size = mesh.bounds.extents*2;
 		}
-		
-		
+				
 	}
 			
     //-----------------------------------------------------------------------------
@@ -244,7 +315,7 @@ public class OTTextSprite : OTSprite
     
     protected override string GetTypeName()
     {
-        return "Text";
+        return "TextSprite";
     }
 			
     protected override void HandleUV()
@@ -260,6 +331,13 @@ public class OTTextSprite : OTSprite
 		base.Clean();	
 		offset = Vector2.zero;
 	}
+	
+	public override void PassiveUpdate()
+	{
+		if (_text_!=text || _textFile!=textFile || _bytesLines != GetBytes() || 
+			_wordWrap!=wordWrap || _justify!=justify || _lineHeightModifier!=lineHeightModifier)
+			Update();
+	}
 
     //-----------------------------------------------------------------------------
     // class methods
@@ -267,13 +345,16 @@ public class OTTextSprite : OTSprite
     
     protected override void Awake()
     {
+		passiveControl = true;
         base.Awake();
+		_text_ = text;
 		_text = text;
 		_textFile = textFile;
 		_wordWrap = wordWrap;
 		_justify = justify;
+		_lineHeightModifier = lineHeightModifier;
 		
-		if (lastContainer!=null && _spriteContainer == null)
+		if (lastContainer!=null && _spriteContainer == null && _containerName == "")
 		{
 			_spriteContainer = lastContainer;
 			_tintColor = lastColor;
@@ -312,13 +393,15 @@ public class OTTextSprite : OTSprite
 			
 		}		
 		
-		if (_text!=text || _textFile!=textFile || _bytesLines != GetBytes() || 
-			_wordWrap!=wordWrap || _justify!=justify )
+		if (_text_!=text || _textFile!=textFile || _bytesLines != GetBytes() || 
+			_wordWrap!=wordWrap || _justify!=justify || _lineHeightModifier!=lineHeightModifier)
 		{
+			_text_ = text;
 			_text = text;
 			_textFile = textFile;
 			_wordWrap = wordWrap;
 			_justify = justify;
+			_lineHeightModifier = lineHeightModifier;
 			meshDirty = true;
 		}
 				
@@ -331,9 +414,9 @@ class OTTextAlinea
 {
 	public List<OTTextLine> lines = new List<OTTextLine>();
 		
-	public OTTextAlinea(int yPosition)
+	public OTTextAlinea(int yPosition, int lineHeight)
 	{
-		lines.Add(new OTTextLine(yPosition, true));
+		lines.Add(new OTTextLine(yPosition, true, lineHeight));
 	}
 	
 	public void Clean()
@@ -378,7 +461,7 @@ class OTTextLine
 {
 	public int charCount;
 	public int yPosition;
-	
+	int lineHeight = 0;
 	
 	public string text
 	{
@@ -399,7 +482,12 @@ class OTTextLine
 	{
 		get
 		{
-			Vector2[] _uv = new Vector2[]{};
+			Vector2[] _uv = new Vector2[]{
+				new Vector2(0,0),
+				new Vector2(0,0),
+				new Vector2(0,0),
+				new Vector2(0,0)
+			};
 			for (int w=0; w<words.Count; w++)
 			{
 				Vector2[] wUV = words[w].uv;
@@ -420,7 +508,13 @@ class OTTextLine
 		if (maxWidth>0 && !justify)
 			twx = (float)(maxWidth - width) * (pivot.x + 0.5f);
 				
-		Vector3[] _verts = new Vector3[]{};
+		Vector3[] _verts = 	new Vector3[] { 
+			new Vector3(0,0,0),
+			new Vector3(1,0,0),
+			new Vector3(1,-lineHeight,0),
+			new Vector3(0,-lineHeight,0)					
+		};		
+		
 		for (int w=0; w<words.Count; w++)
 		{
 			Vector3[] wVerts = words[w].verts;
@@ -455,9 +549,10 @@ class OTTextLine
 	}
 	
 	OTTextWord word;
-	public OTTextLine(int yPosition, bool createWord)
+	public OTTextLine(int yPosition, bool createWord, int lineHeight)
 	{
 		this.yPosition = yPosition;
+		this.lineHeight = lineHeight;
 		word = null;
 		if (createWord)
 			Word();
@@ -499,7 +594,7 @@ class OTTextLine
 		List<OTTextLine> wLines = new List<OTTextLine>();
 		if (words.Count>0)
 		{
-			OTTextLine line = new OTTextLine(yPosition, false);
+			OTTextLine line = new OTTextLine(yPosition, false, lineHeight);
 			wLines.Add(line);
 			int ww = 0; int yp = yPosition;
 			for (int w=0; w<words.Count; w++)
@@ -514,7 +609,7 @@ class OTTextLine
 						ww = 0;
 						yp -= dy;
 						line.End();
-						line = new OTTextLine(yp, false);
+						line = new OTTextLine(yp, false, lineHeight);
 						wLines.Add(line);
 					}
 					else

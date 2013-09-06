@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class OTTweenController : OTController
 {
 
-    List<OTTween> tweens = new List<OTTween>();
+    public List<OTTween> tweens = new List<OTTween>();
 
     public OTTweenController(string name)
         : base(null, name)
@@ -21,7 +21,35 @@ public class OTTweenController : OTController
     {
       tweens.Add(tween);
     }
-
+		
+    public void Clear(bool runningTweens, bool waitingTweens)
+    {
+		
+        if(!runningTweens && !waitingTweens)
+			return;
+				
+                //if both are true we want everything gone
+        if(runningTweens && waitingTweens)
+        {
+            tweens.Clear();
+            return;
+        }
+		
+        if(runningTweens)
+        {
+            //remove all tweens that are currently running
+            for(int i=0;i<tweens.Count;i++)
+                if(tweens[i].isRunning)
+                    tweens.RemoveAt(i);
+        }
+        else
+        {
+            //remove all tweens that are currently waiting to start
+            for(int i=0;i<tweens.Count;i++)
+                if(tweens[i].isWaiting)
+                    tweens.RemoveAt(i);
+        }
+    }	
 
     protected override void Update()
     {
@@ -31,7 +59,10 @@ public class OTTweenController : OTController
 		while (t<tweens.Count)
 		{
 			if (tweens[t].Update(deltaTime))
-				tweens.Remove(tweens[t]);
+			{
+				if (!tweens[t].restarted)
+					tweens.Remove(tweens[t]);
+			}
 			else
 				t++;
 		}

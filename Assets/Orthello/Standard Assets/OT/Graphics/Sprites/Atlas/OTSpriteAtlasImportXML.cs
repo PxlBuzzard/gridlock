@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using System.Xml;
 using System.IO;
 
 /// <summary>
@@ -8,30 +7,7 @@ using System.IO;
 /// </summary>
 public class OTSpriteAtlasImportXML : OTSpriteAtlasImport
 {
-    
-    protected  string AttrS(XmlNode node, string field)
-    {
-        try
-        {
-            return node.Attributes[field].InnerText;
-        }
-        catch (System.Exception)
-        {
-            return "";
-        }
-    }
-	
-    protected  int AttrI(XmlNode node, string field)
-    {
-        try
-        {
-            return System.Convert.ToInt16(node.Attributes[field].InnerText);
-        }
-        catch (System.Exception)
-        {
-            return -1;
-        }
-    }
+    protected OTXMLDataReader xml;
 	
 	protected override void LocateAtlasData()
 	{
@@ -46,7 +22,6 @@ public class OTSpriteAtlasImportXML : OTSpriteAtlasImport
 #endif
 	}	
 	
-    protected XmlDocument xml = new XmlDocument();
     /// <summary>
     /// Check if xml provided is valid
     /// </summary>
@@ -55,7 +30,8 @@ public class OTSpriteAtlasImportXML : OTSpriteAtlasImport
     {
         try
         {
-            xml.LoadXml(atlasDataFile.text);
+			xml = new OTXMLDataReader(name, atlasDataFile.text);
+			xml.Open();
             return true;
         }
         catch (System.Exception err)
